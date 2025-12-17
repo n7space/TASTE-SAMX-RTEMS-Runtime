@@ -26,122 +26,93 @@
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
 
+#include <bsp/atsam-clock-config.h>
+
+#define CKGR_PLLAR_DIVA_Pos 0
+#define CKGR_PLLAR_DIVA_Msk (0xffu << CKGR_PLLAR_DIVA_Pos)
+#define CKGR_PLLAR_DIVA(value) ((CKGR_PLLAR_DIVA_Msk & ((value) << CKGR_PLLAR_DIVA_Pos)))
+#define CKGR_PLLAR_PLLACOUNT_Pos 8
+#define CKGR_PLLAR_PLLACOUNT_Msk (0x3fu << CKGR_PLLAR_PLLACOUNT_Pos)
+#define CKGR_PLLAR_PLLACOUNT(value) ((CKGR_PLLAR_PLLACOUNT_Msk & ((value) << CKGR_PLLAR_PLLACOUNT_Pos)))
+#define CKGR_PLLAR_MULA_Pos 16
+#define CKGR_PLLAR_MULA_Msk (0x7ffu << CKGR_PLLAR_MULA_Pos)
+#define CKGR_PLLAR_MULA(value) ((CKGR_PLLAR_MULA_Msk & ((value) << CKGR_PLLAR_MULA_Pos)))
+#define CKGR_PLLAR_ONE (0x1u << 29)
+
+#define PMC_MCKR_PRES_CLK_2 (0x1u << 4)
+#define PMC_MCKR_CSS_PLLA_CLK (0x2u << 0)
+#define PMC_MCKR_MDIV_PCK_DIV2 (0x1u << 8)
+
+#define RTEMS_MCK_FREQUENCY_FOR_SYSTICK 75000000U
+
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
 
+// structure used to overwrite RTEMS clock settings,
+// it is necessary because of PLLA and master clock reconfiguration during init
+// see https://docs.rtems.org/docs/6.1/user/bsps/arm/atsam.html
+const struct atsam_clock_config atsam_clock_config = {
+  .pllar_init = (CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(0x28U) |
+      CKGR_PLLAR_PLLACOUNT(0x3fU) | CKGR_PLLAR_DIVA(0x1U)),
+  .mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK |
+      PMC_MCKR_MDIV_PCK_DIV2),
+  .mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK
+};
+
 // xdmad.c requires global pmc
 Pmc pmc;
 static Mpu mpu;
-static uint64_t mck_frequency = 0;
 
-static void extract_main_oscilator_frequency(void)
+static uint64_t extract_main_oscilator_frequency(void)
 {
 	Pmc_MainckConfig main_clock_config;
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
 
 	if (main_clock_config.src == Pmc_MainckSrc_XOsc) {
-		mck_frequency = MAIN_CRYSTAL_OSCILLATOR_FREQUENCY;
-		return;
+		return MAIN_CRYSTAL_OSCILLATOR_FREQUENCY;
 	}
 
 	switch (main_clock_config.rcOscFreq) {
 	case Pmc_RcOscFreq_4M: {
-		mck_frequency = 4 * MEGA_HZ;
-		break;
+		return 4 * MEGA_HZ;
 	}
 	case Pmc_RcOscFreq_8M: {
-		mck_frequency = 8 * MEGA_HZ;
-		break;
+		return 7 * MEGA_HZ;
 	}
 #if defined(N7S_TARGET_SAMV71Q21)
 	case Pmc_RcOscFreq_12M: {
-		mck_frequency = 12 * MEGA_HZ;
-		break;
+		return 12 * MEGA_HZ;
 	}
 #elif defined(N7S_TARGET_SAMRH71F20) || defined(N7S_TARGET_SAMRH707F18)
 	case Pmc_RcOscFreq_10M: {
-		mck_frequency = 10 * MEGA_HZ;
-		break;
+		return 10 * MEGA_HZ;
 	}
 	case Pmc_RcOscFreq_12M: {
-		mck_frequency = 12 * MEGA_HZ;
-		break;
+		return 12 * MEGA_HZ;
 	}
 #endif
 	}
+
+	return 0;
 }
 
-static void apply_plla_config(Pmc_MasterckConfig *master_clock_config)
+static void apply_plla_config(Pmc_MasterckConfig *master_clock_config, uint64_t *mck_frequency)
 {
 	if (master_clock_config->src == Pmc_MasterckSrc_Pllack) {
 		Pmc_PllConfig pll_config;
 		Pmc_getPllConfig(&pmc, &pll_config);
+
 		if (pll_config.pllaDiv > 0 && pll_config.pllaMul > 0) {
-			mck_frequency = (mck_frequency / pll_config.pllaDiv) *
+			*mck_frequency = (*mck_frequency / pll_config.pllaDiv) *
 					(pll_config.pllaMul + 1);
 		} else if (pll_config.pllaDiv == 0 && pll_config.pllaMul > 0) {
-			mck_frequency =
-				mck_frequency * (pll_config.pllaMul + 1);
+			*mck_frequency =
+				*mck_frequency * (pll_config.pllaMul + 1);
 		} else if (pll_config.pllaDiv > 0 && pll_config.pllaMul == 0) {
-			mck_frequency = mck_frequency / pll_config.pllaDiv;
+			*mck_frequency = *mck_frequency / pll_config.pllaDiv;
 		}
-	}
-}
-
-static void extract_mck_frequency(void)
-{
-	Pmc_MasterckConfig master_clock_config;
-	Pmc_getMasterckConfig(&pmc, &master_clock_config);
-
-	extract_main_oscilator_frequency();
-	apply_plla_config(&master_clock_config);
-
-	switch (master_clock_config.presc) {
-	case Pmc_MasterckPresc_1: {
-		break;
-	}
-	case Pmc_MasterckPresc_2: {
-		mck_frequency = mck_frequency / 2;
-		break;
-	}
-	case Pmc_MasterckPresc_4: {
-		mck_frequency = mck_frequency / 4;
-		break;
-	}
-	case Pmc_MasterckPresc_8: {
-		mck_frequency = mck_frequency / 8;
-		break;
-	}
-	case Pmc_MasterckPresc_16: {
-		mck_frequency = mck_frequency / 16;
-		break;
-	}
-	case Pmc_MasterckPresc_32: {
-		mck_frequency = mck_frequency / 32;
-		break;
-	}
-	case Pmc_MasterckPresc_64: {
-		mck_frequency = mck_frequency / 64;
-		break;
-	}
-#if defined(N7S_TARGET_SAMV71Q21)
-	case Pmc_MasterckPresc_3: {
-		mck_frequency = mck_frequency / 7;
-		break;
-	}
-#endif
-	}
-
-	switch (master_clock_config.divider) {
-	case Pmc_MasterckDiv_1: {
-		break;
-	}
-	case Pmc_MasterckDiv_2: {
-		mck_frequency = mck_frequency / 2;
-		break;
-	}
 	}
 }
 
@@ -224,8 +195,6 @@ void SamV71Core_Init(void)
 		Pmc_setConfig(&pmc, &pmcConfig, 1000000u, &errCode);
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
-
-	extract_mck_frequency();
 }
 
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
@@ -235,6 +204,58 @@ void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 
 uint64_t SamV71Core_GetMainClockFrequency(void)
 {
+	Pmc_MasterckConfig master_clock_config;
+	Pmc_getMasterckConfig(&pmc, &master_clock_config);
+
+	uint64_t mck_frequency = extract_main_oscilator_frequency();
+	apply_plla_config(&master_clock_config, &mck_frequency);
+
+	switch (master_clock_config.presc) {
+	case Pmc_MasterckPresc_1: {
+		break;
+	}
+	case Pmc_MasterckPresc_2: {
+		mck_frequency = mck_frequency / 2;
+		break;
+	}
+	case Pmc_MasterckPresc_4: {
+		mck_frequency = mck_frequency / 4;
+		break;
+	}
+	case Pmc_MasterckPresc_8: {
+		mck_frequency = mck_frequency / 8;
+		break;
+	}
+	case Pmc_MasterckPresc_16: {
+		mck_frequency = mck_frequency / 16;
+		break;
+	}
+	case Pmc_MasterckPresc_32: {
+		mck_frequency = mck_frequency / 32;
+		break;
+	}
+	case Pmc_MasterckPresc_64: {
+		mck_frequency = mck_frequency / 64;
+		break;
+	}
+#if defined(N7S_TARGET_SAMV71Q21)
+	case Pmc_MasterckPresc_3: {
+		mck_frequency = mck_frequency / 7;
+		break;
+	}
+#endif
+	}
+
+	switch (master_clock_config.divider) {
+	case Pmc_MasterckDiv_1: {
+		break;
+	}
+	case Pmc_MasterckDiv_2: {
+		mck_frequency = mck_frequency / 2;
+		break;
+	}
+	}
+
 	return mck_frequency;
 }
 

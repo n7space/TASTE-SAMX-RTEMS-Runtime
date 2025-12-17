@@ -122,10 +122,10 @@ bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
 
 	cyclic_request_data[cyclic_requests_count].next_wakeup_ticks =
 		RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns /
-					    NANOSECONDS_IN_MILLISECOND);
+					    (double)NANOSECONDS_IN_MILLISECOND);
 	cyclic_request_data[cyclic_requests_count].interval_ticks =
 		RTEMS_MILLISECONDS_TO_TICKS(interval_ns /
-					    NANOSECONDS_IN_MILLISECOND);
+					    (double)NANOSECONDS_IN_MILLISECOND);
 	cyclic_request_data[cyclic_requests_count].queue_id = queue_id;
 	cyclic_request_data[cyclic_requests_count].request_size = request_size;
 
