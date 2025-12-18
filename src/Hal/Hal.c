@@ -45,7 +45,7 @@ static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
 static ConcurrentAccessFlag reloads_modified_flag;
-static uint32_t reloads_counter;
+static volatile uint32_t reloads_counter;
 static Tic tic = {};
 static bool idleTaskIsWatchdogEnabled = false;
 
@@ -137,6 +137,7 @@ static void Hal_InitTimer(void)
 	config.isEnabled = true;
 	config.clockSource = Tic_ClockSelection_MckBy8;
 	config.irqConfig.isCounterOverflowIrqEnabled = true;
+	config.rc = 65535u;
 	Tic_setChannelConfig(&tic, Tic_Channel_0, &config);
 
 	Tic_enableChannel(&tic, Tic_Channel_0);
