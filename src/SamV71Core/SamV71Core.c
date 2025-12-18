@@ -43,7 +43,10 @@
 #define PMC_MCKR_CSS_PLLA_CLK (0x2u << 0)
 #define PMC_MCKR_MDIV_PCK_DIV2 (0x1u << 8)
 
-#define RTEMS_MCK_FREQUENCY_FOR_SYSTICK 75000000U
+#define PLLA_MUL 24u
+#define PLLA_DIV 1u
+#define PLLA_COUNT 60u
+#define RTEMS_MCK_FREQUENCY_FOR_SYSTICK 75000000u
 
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
@@ -54,8 +57,8 @@
 // it is necessary because of PLLA and master clock reconfiguration during init
 // see https://docs.rtems.org/docs/6.1/user/bsps/arm/atsam.html
 const struct atsam_clock_config atsam_clock_config = {
-  .pllar_init = (CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(0x28U) |
-      CKGR_PLLAR_PLLACOUNT(0x3fU) | CKGR_PLLAR_DIVA(0x1U)),
+  .pllar_init = (CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(PLLA_MUL) |
+      CKGR_PLLAR_PLLACOUNT(PLLA_COUNT) | CKGR_PLLAR_DIVA(PLLA_DIV)),
   .mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK |
       PMC_MCKR_MDIV_PCK_DIV2),
   .mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK
@@ -65,7 +68,7 @@ const struct atsam_clock_config atsam_clock_config = {
 Pmc pmc;
 static Mpu mpu;
 
-static uint64_t extract_main_oscilator_frequency(void)
+static uint64_t extract_main_oscillator_frequency(void)
 {
 	Pmc_MainckConfig main_clock_config;
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
@@ -79,7 +82,7 @@ static uint64_t extract_main_oscilator_frequency(void)
 		return 4 * MEGA_HZ;
 	}
 	case Pmc_RcOscFreq_8M: {
-		return 7 * MEGA_HZ;
+		return 8 * MEGA_HZ;
 	}
 #if defined(N7S_TARGET_SAMV71Q21)
 	case Pmc_RcOscFreq_12M: {
@@ -136,9 +139,9 @@ void SamV71Core_Init(void)
 	  .xoscStartupTime = 0
 	},
 	.pll = {
-	  .pllaMul = 24,
-	  .pllaDiv = 1,
-	  .pllaStartupTime = 60
+	  .pllaMul = PLLA_MUL,
+	  .pllaDiv = PLLA_DIV,
+	  .pllaStartupTime = PLLA_COUNT
 	},
 	.masterck = {
 	  .src = Pmc_MasterckSrc_Pllack,
@@ -207,7 +210,7 @@ uint64_t SamV71Core_GetMainClockFrequency(void)
 	Pmc_MasterckConfig master_clock_config;
 	Pmc_getMasterckConfig(&pmc, &master_clock_config);
 
-	uint64_t mck_frequency = extract_main_oscilator_frequency();
+	uint64_t mck_frequency = extract_main_oscillator_frequency();
 	apply_plla_config(&master_clock_config, &mck_frequency);
 
 	switch (master_clock_config.presc) {
