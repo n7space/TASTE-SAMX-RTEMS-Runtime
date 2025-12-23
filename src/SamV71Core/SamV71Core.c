@@ -25,6 +25,7 @@
 #include "Utils/ErrorCode.h"
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
+#include <Fpu/Fpu.h>
 
 #include <bsp/atsam-clock-config.h>
 
@@ -67,6 +68,7 @@ const struct atsam_clock_config atsam_clock_config = {
 // xdmad.c requires global pmc
 Pmc pmc;
 static Mpu mpu;
+static Fpu fpu;
 
 static uint64_t extract_main_oscillator_frequency(void)
 {
@@ -123,10 +125,13 @@ void SamV71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
 	Mpu_init(&mpu);
+	Fpu_init(&fpu);
+
 	Mpu_Config mpuConf = { .isEnabled = true,
 			       .isDefaultMemoryMapEnabled = true,
 			       .isMpuEnabledInHandlers = true };
 	Mpu_setConfig(&mpu, &mpuConf);
+	Fpu_startup(&fpu);
 
 #ifndef RT_RTOS_NO_INIT
 	// Configure RC Oscillator as source for main clock.
