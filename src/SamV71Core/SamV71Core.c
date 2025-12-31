@@ -203,6 +203,7 @@ void SamV71Core_Init(void)
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 {
 	Pmc_enablePeripheralClk(&pmc, peripheralId);
+	Pmc_isPeripheralClkEnabled(&pmc, peripheralId);
 }
 
 uint64_t SamV71Core_GetMainClockFrequency(void)
