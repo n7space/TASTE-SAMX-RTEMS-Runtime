@@ -47,7 +47,6 @@ static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 static ConcurrentAccessFlag reloads_modified_flag;
 static volatile uint32_t reloads_counter;
 static Tic tic = {};
-extern Pmc pmc;
 static bool idleTaskIsWatchdogEnabled = false;
 
 rtems_name generate_new_hal_semaphore_name()
