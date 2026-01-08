@@ -203,12 +203,8 @@ void SamV71Core_Init(void)
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 {
 	Pmc_enablePeripheralClk(&pmc, peripheralId);
-	int timeout = 100;
-	while (!Pmc_isPeripheralClkEnabled(&pmc, peripheralId))
-	{
-		assert(timeout > 0 && "Clock cannot be enabled");
-		timeout--;
-	}
+	const bool is_enabled = Pmc_isPeripheralClkEnabled(&pmc, peripheralId);
+	assert(is_enabled && "Peripheral clock not enabled");
 }
 
 uint64_t SamV71Core_GetMainClockFrequency(void)
