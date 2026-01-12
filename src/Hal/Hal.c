@@ -140,7 +140,6 @@ static void Hal_InitTimer(void)
 	config.rc = 65535u;
 	Tic_setChannelConfig(&tic, Tic_Channel_0, &config);
 
-	Tic_enableChannel(&tic, Tic_Channel_0);
 	Tic_triggerChannel(&tic, Tic_Channel_0);
 }
 
