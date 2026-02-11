@@ -39,7 +39,7 @@
 
 #define NANOSECOND_IN_SECOND 1000000000ULL
 #define TICKS_PER_RELOAD 65535ul
-#define CLOCK_SELECTION_PRESCALLER 8.0
+#define CLOCK_SELECTION_PRESCALLER 8U
 
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
@@ -153,7 +153,7 @@ bool Hal_Init(void)
 	Hal_InitTimer();
 
 	main_clock_frequency = SamV71Core_GetMainClockFrequency();
-	uint64_t prescaled_clock_frequency = main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
+	const uint64_t prescaled_clock_frequency = main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
 	// ns_per_tick = 1e9 / prescaled_clock_frequency in Q32.32 fixed-point
 	ns_per_tick_q32 = (NANOSECOND_IN_SECOND << 32) / prescaled_clock_frequency;
 
@@ -174,8 +174,15 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 	const uint64_t total_ticks =
         (uint64_t)reloads * TICKS_PER_RELOAD + ticks;
 
-	// fixed-point multiply: (ticks * ns_per_tick_q32) >> 32
-    return (total_ticks * ns_per_tick_q32) >> 32;
+	// Split into high and low 32-bit parts to prevent overflow
+    const uint64_t ticks_high = total_ticks >> 32;
+    const uint64_t ticks_low = total_ticks & 0xFFFFFFFF;
+
+	// Each part multiplied separately, already shifted by 32
+    const uint64_t ns_high = ticks_high * ns_per_tick_q32;
+    const uint64_t ns_low = (ticks_low * ns_per_tick_q32) >> 32;
+
+    return ns_high + ns_low;
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
