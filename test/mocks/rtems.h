@@ -24,10 +24,10 @@ typedef void (*rtems_interrupt_handler)(void*);
 	(((uint32_t)(a) << 24) | ((uint32_t)(b) << 16) | ((uint32_t)(c) << 8) | (uint32_t)(d))
 
 /* Mocked API declarations */
-const rtems_status_code rtems_semaphore_release(const rtems_id id);
-const rtems_status_code rtems_semaphore_obtain(const rtems_id id, const uint32_t mode, const uint32_t timeout);
+rtems_status_code rtems_semaphore_release(const rtems_id id);
+rtems_status_code rtems_semaphore_obtain(const rtems_id id, const uint32_t mode, const uint32_t timeout);
 
-const rtems_status_code rtems_interrupt_handler_install(
+rtems_status_code rtems_interrupt_handler_install(
   rtems_vector_number vector,
   const char *info,
   rtems_option options,
@@ -35,14 +35,14 @@ const rtems_status_code rtems_interrupt_handler_install(
   void *arg
 );
 
-const rtems_status_code rtems_interrupt_vector_enable(const rtems_vector_number number);
+rtems_status_code rtems_interrupt_vector_enable(const rtems_vector_number number);
 
-const rtems_status_code rtems_semaphore_create(const rtems_name name,
+rtems_status_code rtems_semaphore_create(const rtems_name name,
     const uint32_t initial_value,
     const uint32_t type,
     const uint32_t ceiling,
     const rtems_id* ids);
 
-const rtems_status_code rtems_task_wake_after(const rtems_interval interval);
+rtems_status_code rtems_task_wake_after(const rtems_interval interval);
 
 #endif
