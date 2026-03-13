@@ -8,7 +8,7 @@ all: test
 
 # Explicit compilation command, for simplicity
 # Function and data sections are required to avoid linking to anything
-# that is not explicitly required in tests 
+# that is not explicitly required in tests .
 
 test:
 	mkdir -p $(BUILD_DIR)
@@ -17,6 +17,7 @@ test:
 		../../src/Hal/Hal.c \
 		../unity/unity.c \
 		-I../unity \
+		-I../../src/Hal \
 		-I../../src/SamV71Core \
 		-I../../src/BootHelper \
 		-I../../arm-bsp/src/ \
