@@ -12,6 +12,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        # Checkout submodules too (recursively) so tests and build can access them
+        submodules: 'recursive'
     - name: Install dependencies
       run: |
         sudo apt update && sudo apt install -y gcc
