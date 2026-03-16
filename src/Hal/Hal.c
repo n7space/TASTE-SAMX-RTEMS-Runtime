@@ -18,6 +18,7 @@
  */
 
 #include "Hal.h"
+#include "HalInternal.h"
 
 #include <string.h>
 #include <assert.h>
@@ -51,6 +52,21 @@ static bool idleTaskIsWatchdogEnabled = false;
 
 static uint64_t main_clock_frequency;
 static uint64_t ns_per_tick_q32;
+// Pre-split halves to speed-up computation
+static uint64_t ns_per_tick_q32_hi;
+static uint64_t ns_per_tick_q32_lo;
+
+void Hal_SetReloadsCounter(const uint32_t value)
+{
+	reloads_counter = value;
+}
+
+void Hal_SetNsPerTickQ32(const uint64_t value)
+{
+	ns_per_tick_q32 = value;
+	ns_per_tick_q32_hi = value >> 32;
+	ns_per_tick_q32_lo = value & 0xFFFFFFFFU;
+}
 
 rtems_name generate_new_hal_semaphore_name()
 {
@@ -153,9 +169,13 @@ bool Hal_Init(void)
 	Hal_InitTimer();
 
 	main_clock_frequency = SamV71Core_GetMainClockFrequency();
-	const uint64_t prescaled_clock_frequency = main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
+	const uint64_t prescaled_clock_frequency =
+		main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
 	// ns_per_tick = 1e9 / prescaled_clock_frequency in Q32.32 fixed-point
-	ns_per_tick_q32 = (NANOSECOND_IN_SECOND << 32) / prescaled_clock_frequency;
+	ns_per_tick_q32 =
+		(NANOSECOND_IN_SECOND << 32) / prescaled_clock_frequency;
+	ns_per_tick_q32_hi = ns_per_tick_q32 >> 32;
+	ns_per_tick_q32_lo = ns_per_tick_q32 & 0xFFFFFFFFU;
 
 	return true;
 }
@@ -172,24 +192,22 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 	} while (ConcurrentAccessFlag_check(&reloads_modified_flag));
 
 	const uint64_t total_ticks =
-        (uint64_t)reloads * TICKS_PER_RELOAD + ticks;
+		(uint64_t)reloads * TICKS_PER_RELOAD + ticks;
 
-	// Split into high and low 32-bit parts to prevent overflow
-    const uint64_t ticks_high = total_ticks >> 32;
-    const uint64_t ticks_low = total_ticks & 0xFFFFFFFF;
+	const uint64_t ticks_high = total_ticks >> 32;
+	const uint64_t ticks_low = total_ticks & 0xFFFFFFFFU;
 
-	// Each part multiplied separately, already shifted by 32
-    const uint64_t ns_high = ticks_high * ns_per_tick_q32;
-    const uint64_t ns_low = (ticks_low * ns_per_tick_q32) >> 32;
+	const uint64_t ns_high = ticks_high * ns_per_tick_q32;
+	const uint64_t ns_low = (ticks_low * ns_per_tick_q32_hi) +
+				((ticks_low * ns_per_tick_q32_lo) >> 32);
 
-    return ns_high + ns_low;
+	return ns_high + ns_low;
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
 	const double sleep_tick_count =
-		time_ns * ((double)main_clock_frequency /
-			   NANOSECOND_IN_SECOND);
+		time_ns * ((double)main_clock_frequency / NANOSECOND_IN_SECOND);
 
 	return rtems_task_wake_after((rtems_interval)sleep_tick_count) ==
 	       RTEMS_SUCCESSFUL;
