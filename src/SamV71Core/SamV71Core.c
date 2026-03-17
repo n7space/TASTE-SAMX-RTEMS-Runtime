@@ -295,8 +295,12 @@ bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 
 void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
 {
-	// at this moment it is used by can driver
-	// where the Mpu_RegionMemoryType_StronglyOrdered breaks the driver
+	// At this moment it is used by can driver,
+	// where the Mpu_RegionMemoryType_StronglyOrdered breaks the driver:
+	// - the BSP uses memcpy to newlib to copy data from/to message ram
+	// - if the memcpy has to copy 3 bytes, it copies one byte and then two next bytes
+	//    using only one arm instruction `ldrh`, but the address of two next bytes is odd,
+	// - the processor raises exception due to unaligned access.
 	assert(((uint32_t)address & (~MPU_RBAR_ADDR_MASK)) ==
 	       0); // verify proper alignment of address
 	assert(sizeExponent >= 4); // exponents less than 4 are reserved
