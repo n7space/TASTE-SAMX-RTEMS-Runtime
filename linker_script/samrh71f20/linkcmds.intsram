@@ -1,0 +1,3 @@
+INCLUDE linkcmds.memory
+
+INCLUDE linkcmds.armv7m

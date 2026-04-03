@@ -36,7 +36,13 @@
 #include <Uart/Uart.h>
 #include <Utils/ErrorCode.h>
 #include <Wdt/Wdt.h>
+#if defined(N7S_TARGET_SAMV71Q21)
 #include <SamV71Core.h>
+#elif defined(N7S_TARGET_SAMRH71F20)
+#include <SamRH71Core.h>
+#else
+#error "one of N7S_TARGET_SAMV71Q21, N7S_TARGET_SAMRH71F20 shall be defined"
+#endif
 
 #define NANOSECOND_IN_SECOND 1000000000ULL
 #define TICKS_PER_RELOAD 65535ul
@@ -138,7 +144,11 @@ void timer_irq_handler()
 static void Hal_InitTimer(void)
 {
 	reloads_counter = 0u;
+#if defined(N7S_TARGET_SAMV71Q21)
 	SamV71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
+#elif defined(N7S_TARGET_SAMRH71F20)
+    SamRH71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
+#endif
 
 	// NVIC cannot be used for registration of interrupt handlers
 	// instead, the RTEMS API shall be used: the interrupt vector table is managed by RTEMS,
@@ -165,10 +175,19 @@ static void Hal_InitTimer(void)
 bool Hal_Init(void)
 {
 	Init_setup_watchdog();
+#if defined(N7S_TARGET_SAMV71Q21)
 	SamV71Core_Init();
+#elif defined(N7S_TARGET_SAMRH71F20)
+    SamRH71Core_Init();
+#endif
+
 	Hal_InitTimer();
 
+#if defined(N7S_TARGET_SAMV71Q21)
 	main_clock_frequency = SamV71Core_GetMainClockFrequency();
+#elif defined(N7S_TARGET_SAMRH71F20)
+	main_clock_frequency = SamRH71Core_GetMainClockFrequency();
+#endif
 	const uint64_t prescaled_clock_frequency =
 		main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
 	// ns_per_tick = 1e9 / prescaled_clock_frequency in Q32.32 fixed-point
