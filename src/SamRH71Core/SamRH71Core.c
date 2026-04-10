@@ -1,7 +1,7 @@
 /**@file
- * This file is part of the TASTE SAMV71 RTEMS Runtime.
+ * This file is part of the TASTE SAMRH71 RTEMS Runtime.
  *
- * @copyright 2025-2026 N7 Space Sp. z o.o.
+ * @copyright 2026 N7 Space Sp. z o.o.
  *
  * Licensed under the ESA Public License (ESA-PL) Permissive (Type 3),
  * Version 2.4 (the "License");
@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "SamV71Core.h"
+#include "SamRH71Core.h"
 
 #include <stdint.h>
 #include <assert.h>
@@ -28,8 +28,6 @@
 #include <Systick/Systick.h>
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
-
-#include <bsp/atsam-clock-config.h>
 
 #define CKGR_PLLAR_DIVA_Pos 0
 #define CKGR_PLLAR_DIVA_Msk (0xffu << CKGR_PLLAR_DIVA_Pos)
@@ -59,17 +57,7 @@
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
 
-// structure used to overwrite RTEMS clock settings,
-// it is necessary because of PLLA and master clock reconfiguration during init
-// see https://docs.rtems.org/docs/6.1/user/bsps/arm/atsam.html
-const struct atsam_clock_config atsam_clock_config = {
-	.pllar_init =
-		(CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(PLLA_MUL) |
-		 CKGR_PLLAR_PLLACOUNT(PLLA_COUNT) | CKGR_PLLAR_DIVA(PLLA_DIV)),
-	.mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK |
-		      PMC_MCKR_MDIV_PCK_DIV2),
-	.mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK
-};
+extern void setCoreClockFrequency(uint64_t frequency);
 
 // xdmad.c requires global pmc
 Pmc pmc;
@@ -91,7 +79,7 @@ static uint64_t extract_main_oscillator_frequency(void)
 	case Pmc_RcOscFreq_8M: {
 		return 8 * MEGA_HZ;
 	}
-#if defined(N7S_TARGET_SAMV71Q21)
+#if defined(N7S_TARGET_SAMRH71Q21)
 	case Pmc_RcOscFreq_12M: {
 		return 12 * MEGA_HZ;
 	}
@@ -127,7 +115,7 @@ static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
 	}
 }
 
-void SamV71Core_Init(void)
+void SamRH71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
 	Mpu_init(&mpu);
@@ -141,64 +129,16 @@ void SamV71Core_Init(void)
 	// Configure PLLA and master clock.
 	// This is default setting, unless RT_RTOS_NO_INIT is enabled.
 	const Pmc_Config pmcConfig = {
-	.mainck = {
-	  .src = Pmc_MainckSrc_RcOsc,
-	  .rcOscFreq = Pmc_RcOscFreq_12M,
-	  .xoscStartupTime = 0
-	},
-	.pll = {
-	  .pllaMul = PLLA_MUL,
-	  .pllaDiv = PLLA_DIV,
-	  .pllaStartupTime = PLLA_COUNT
-	},
-	.masterck = {
-	  .src = Pmc_MasterckSrc_Pllack,
-	  .presc = Pmc_MasterckPresc_2,
-	  .divider = Pmc_MasterckDiv_2
-	},
-	.pck = {
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc = 0,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc = 0,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc = 0,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc = 0,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc =0,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Pllack,
-        .presc = 14,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc = 0,
-      },
-      {
-        .isEnabled = FALSE,
-        .src = Pmc_PckSrc_Slck,
-        .presc = 0,
-      },
-
-	},
+		.mainck = { .src = Pmc_MainckSrc_RcOsc,
+			    .rcOscFreq = Pmc_RcOscFreq_12M,
+			    .xoscStartupTime = 0 },
+		.pll = { .pllaMul = PLLA_MUL,
+			 .pllaDiv = PLLA_DIV,
+			 .pllaStartupTime = PLLA_COUNT },
+		.masterck = { .src = Pmc_MasterckSrc_Pllack,
+			      .presc = Pmc_MasterckPresc_2,
+			      .divider = Pmc_MasterckDiv_2 },
+		.pck = {},
 	};
 
 	ErrorCode errCode = ErrorCode_NoError;
@@ -224,14 +164,14 @@ void SamV71Core_Init(void)
 	Systick_setConfig(&systick, &systickConfig);
 }
 
-void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
+void SamRH71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 {
 	Pmc_enablePeripheralClk(&pmc, peripheralId);
 	const bool is_enabled = Pmc_isPeripheralClkEnabled(&pmc, peripheralId);
 	assert(is_enabled && "Peripheral clock not enabled");
 }
 
-uint64_t SamV71Core_GetMainClockFrequency(void)
+uint64_t SamRH71Core_GetMainClockFrequency(void)
 {
 	Pmc_MasterckConfig master_clock_config;
 	Pmc_getMasterckConfig(&pmc, &master_clock_config);
@@ -267,7 +207,7 @@ uint64_t SamV71Core_GetMainClockFrequency(void)
 		mck_frequency = mck_frequency / 64;
 		break;
 	}
-#if defined(N7S_TARGET_SAMV71Q21)
+#if defined(N7S_TARGET_SAMRH71Q21)
 	case Pmc_MasterckPresc_3: {
 		mck_frequency = mck_frequency / 7;
 		break;
@@ -288,36 +228,36 @@ uint64_t SamV71Core_GetMainClockFrequency(void)
 	return mck_frequency;
 }
 
-void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
-				   const char *info,
-				   rtems_interrupt_handler handler,
-				   void *handler_arg)
+void SamRH71Core_InterruptSubscribe(const rtems_vector_number vector,
+				    const char *info,
+				    rtems_interrupt_handler handler,
+				    void *handler_arg)
 {
 	rtems_interrupt_handler_install(vector, info, RTEMS_INTERRUPT_UNIQUE,
 					handler, handler_arg);
 	rtems_interrupt_vector_enable(vector);
 }
 
-rtems_name SamV71Core_GenerateNewSemaphoreName(void)
+rtems_name SamRH71Core_GenerateNewSemaphoreName(void)
 {
 	static rtems_name name = rtems_build_name('C', 0, 0, 0);
 	return name++;
 }
 
-rtems_name SamV71Core_GenerateNewTaskName(void)
+rtems_name SamRH71Core_GenerateNewTaskName(void)
 {
 	static rtems_name name = rtems_build_name('D', 0, 0, 0);
 	return name++;
 }
 
-bool SamV71Core_SetPckConfig(const Pmc_PckId id,
-			     const Pmc_PckConfig *const config,
-			     const uint32_t timeout, ErrorCode *const errCode)
+bool SamRH71Core_SetPckConfig(const Pmc_PckId id,
+			      const Pmc_PckConfig *const config,
+			      const uint32_t timeout, ErrorCode *const errCode)
 {
 	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
 }
 
-void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
+void SamRH71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
 {
 	// At this moment it is used by can driver,
 	// where the Mpu_RegionMemoryType_StronglyOrdered breaks the driver:
