@@ -147,7 +147,7 @@ static void Hal_InitTimer(void)
 #if defined(N7S_TARGET_SAMV71Q21)
 	SamV71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
 #elif defined(N7S_TARGET_SAMRH71F20)
-    SamRH71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
+	SamRH71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
 #endif
 
 	// NVIC cannot be used for registration of interrupt handlers

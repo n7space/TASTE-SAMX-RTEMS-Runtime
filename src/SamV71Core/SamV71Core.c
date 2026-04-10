@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <rtems/timecounter.h>
+#include <rtems/config.h>
 
 #include <Utils/ErrorCode.h>
 #include <Systick/Systick.h>
@@ -33,13 +33,16 @@
 
 #define CKGR_PLLAR_DIVA_Pos 0
 #define CKGR_PLLAR_DIVA_Msk (0xffu << CKGR_PLLAR_DIVA_Pos)
-#define CKGR_PLLAR_DIVA(value) ((CKGR_PLLAR_DIVA_Msk & ((value) << CKGR_PLLAR_DIVA_Pos)))
+#define CKGR_PLLAR_DIVA(value) \
+	((CKGR_PLLAR_DIVA_Msk & ((value) << CKGR_PLLAR_DIVA_Pos)))
 #define CKGR_PLLAR_PLLACOUNT_Pos 8
 #define CKGR_PLLAR_PLLACOUNT_Msk (0x3fu << CKGR_PLLAR_PLLACOUNT_Pos)
-#define CKGR_PLLAR_PLLACOUNT(value) ((CKGR_PLLAR_PLLACOUNT_Msk & ((value) << CKGR_PLLAR_PLLACOUNT_Pos)))
+#define CKGR_PLLAR_PLLACOUNT(value) \
+	((CKGR_PLLAR_PLLACOUNT_Msk & ((value) << CKGR_PLLAR_PLLACOUNT_Pos)))
 #define CKGR_PLLAR_MULA_Pos 16
 #define CKGR_PLLAR_MULA_Msk (0x7ffu << CKGR_PLLAR_MULA_Pos)
-#define CKGR_PLLAR_MULA(value) ((CKGR_PLLAR_MULA_Msk & ((value) << CKGR_PLLAR_MULA_Pos)))
+#define CKGR_PLLAR_MULA(value) \
+	((CKGR_PLLAR_MULA_Msk & ((value) << CKGR_PLLAR_MULA_Pos)))
 #define CKGR_PLLAR_ONE (0x1u << 29)
 
 #define PMC_MCKR_PRES_CLK_2 (0x1u << 4)
@@ -60,11 +63,12 @@
 // it is necessary because of PLLA and master clock reconfiguration during init
 // see https://docs.rtems.org/docs/6.1/user/bsps/arm/atsam.html
 const struct atsam_clock_config atsam_clock_config = {
-  .pllar_init = (CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(PLLA_MUL) |
-      CKGR_PLLAR_PLLACOUNT(PLLA_COUNT) | CKGR_PLLAR_DIVA(PLLA_DIV)),
-  .mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK |
-      PMC_MCKR_MDIV_PCK_DIV2),
-  .mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK
+	.pllar_init =
+		(CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(PLLA_MUL) |
+		 CKGR_PLLAR_PLLACOUNT(PLLA_COUNT) | CKGR_PLLAR_DIVA(PLLA_DIV)),
+	.mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK |
+		      PMC_MCKR_MDIV_PCK_DIV2),
+	.mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK
 };
 
 // xdmad.c requires global pmc
@@ -104,7 +108,8 @@ static uint64_t extract_main_oscillator_frequency(void)
 	return 0;
 }
 
-static void apply_plla_config(Pmc_MasterckConfig *master_clock_config, uint64_t *mck_frequency)
+static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
+			      uint64_t *mck_frequency)
 {
 	if (master_clock_config->src == Pmc_MasterckSrc_Pllack) {
 		Pmc_PllConfig pll_config;
@@ -112,7 +117,7 @@ static void apply_plla_config(Pmc_MasterckConfig *master_clock_config, uint64_t 
 
 		if (pll_config.pllaDiv > 0 && pll_config.pllaMul > 0) {
 			*mck_frequency = (*mck_frequency / pll_config.pllaDiv) *
-					(pll_config.pllaMul + 1);
+					 (pll_config.pllaMul + 1);
 		} else if (pll_config.pllaDiv == 0 && pll_config.pllaMul > 0) {
 			*mck_frequency =
 				*mck_frequency * (pll_config.pllaMul + 1);
@@ -202,15 +207,18 @@ void SamV71Core_Init(void)
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
 
-    uint64_t coreFrequency = SamRH71Core_GetMainClockFrequency();
+	uint64_t coreFrequency = SamRH71Core_GetMainClockFrequency();
 	setCoreClockFrequency(coreFrequency);
 
-    uint32_t systickReloadValue = (uint32_t)((coreFrequency * rtems_configuration_get_microseconds_per_tick()) / 1000000u);
+	uint32_t systickReloadValue =
+		(uint32_t)((coreFrequency *
+			    rtems_configuration_get_microseconds_per_tick()) /
+			   1000000u);
 
 	Systick systick;
 	Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
-    Systick_Config systickConfig;
-    Systick_getConfig(&systick, &systickConfig);
+	Systick_Config systickConfig;
+	Systick_getConfig(&systick, &systickConfig);
 	systickConfig.reloadValue = systickReloadValue;
 
 	Systick_setConfig(&systick, &systickConfig);
@@ -320,8 +328,8 @@ void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
 	assert(((uint32_t)address & (~MPU_RBAR_ADDR_MASK)) ==
 	       0); // verify proper alignment of address
 	assert(sizeExponent >= 4); // exponents less than 4 are reserved
-	assert(sizeExponent <= 31);
-	; // maximum exponent is 31 which defines 4GB region size
+	assert(sizeExponent <=
+	       31); // maximum exponent is 31 which defines 4GB region size
 
 	// The Mpu allows to define 16 regions, where the higher region number has
 	// higher priority. Regions can overlap, therefore the small regions with
