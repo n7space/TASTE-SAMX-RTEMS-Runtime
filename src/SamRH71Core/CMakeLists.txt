@@ -1,17 +1,17 @@
-add_library(SamV71Core STATIC)
-target_sources(SamV71Core
+add_library(SamRH71Core STATIC)
+target_sources(SamRH71Core
   PRIVATE
-  SamV71Core.c
+  SamRH71Core.c
   PUBLIC
-  SamV71Core.h)
-target_include_directories(SamV71Core
+  SamRH71Core.h)
+target_include_directories(SamRH71Core
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(SamV71Core
-  PRIVATE SAMV71::Pmc
-          SAMV71::Wdt
-          SAMV71::Tic)
+target_link_libraries(SamRH71Core
+  PRIVATE SAMRH71::Pmc
+          SAMRH71::Wdt
+          SAMRH71::Tic)
 
-add_format_target(SamV71Core)
+add_format_target(SamRH71Core)
 
-set_target_properties(SamV71Core PROPERTIES OUTPUT_NAME "samv71core")
-add_library(SAMV71::Runtime::Core ALIAS SamV71Core)
+set_target_properties(SamRH71Core PROPERTIES OUTPUT_NAME "samrh71core")
+add_library(SAMRH71::Runtime::Core ALIAS SamRH71Core)
