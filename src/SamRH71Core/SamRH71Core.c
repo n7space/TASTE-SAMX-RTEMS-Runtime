@@ -1,7 +1,7 @@
 /**@file
  * This file is part of the TASTE SAMRH71 RTEMS Runtime.
  *
- * @copyright 2025 N7 Space Sp. z o.o.
+ * @copyright 2026 N7 Space Sp. z o.o.
  *
  * Licensed under the ESA Public License (ESA-PL) Permissive (Type 3),
  * Version 2.4 (the "License");

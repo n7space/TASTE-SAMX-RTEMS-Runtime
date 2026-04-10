@@ -1,7 +1,7 @@
 /**@file
  * This file is part of the TASTE SAMV71 RTEMS Runtime.
  *
- * @copyright 2025 N7 Space Sp. z o.o.
+ * @copyright 2025-2026 N7 Space Sp. z o.o.
  *
  * Licensed under the ESA Public License (ESA-PL) Permissive (Type 3),
  * Version 2.4 (the "License");
@@ -22,7 +22,10 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "Utils/ErrorCode.h"
+#include <rtems/timecounter.h>
+
+#include <Utils/ErrorCode.h>
+#include <Systick/Systick.h>
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
 
@@ -198,6 +201,19 @@ void SamV71Core_Init(void)
 		Pmc_setConfig(&pmc, &pmcConfig, 1000000u, &errCode);
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
+
+    uint64_t coreFrequency = SamRH71Core_GetMainClockFrequency();
+	setCoreClockFrequency(coreFrequency);
+
+    uint32_t systickReloadValue = (uint32_t)((coreFrequency * rtems_configuration_get_microseconds_per_tick()) / 1000000u);
+
+	Systick systick;
+	Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
+    Systick_Config systickConfig;
+    Systick_getConfig(&systick, &systickConfig);
+	systickConfig.reloadValue = systickReloadValue;
+
+	Systick_setConfig(&systick, &systickConfig);
 }
 
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
