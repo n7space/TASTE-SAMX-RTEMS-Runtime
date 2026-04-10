@@ -22,10 +22,12 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "Utils/ErrorCode.h"
+#include <rtems/timecounter.h>
+
+#include <Utils/ErrorCode.h>
+#include <Systick/Systick.h>
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
-
 
 #define CKGR_PLLAR_DIVA_Pos 0
 #define CKGR_PLLAR_DIVA_Msk (0xffu << CKGR_PLLAR_DIVA_Pos)
@@ -52,16 +54,7 @@
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
 
-// structure used to overwrite RTEMS clock settings,
-// it is necessary because of PLLA and master clock reconfiguration during init
-// see https://docs.rtems.org/docs/6.1/user/bsps/arm/atsam.html
-/* const struct atsam_clock_config atsam_clock_config = { */
-/*   .pllar_init = (CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(PLLA_MUL) | */
-/*       CKGR_PLLAR_PLLACOUNT(PLLA_COUNT) | CKGR_PLLAR_DIVA(PLLA_DIV)), */
-/*   .mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK | */
-/*       PMC_MCKR_MDIV_PCK_DIV2), */
-/*   .mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK */
-/* }; */
+extern void setCoreClockFrequency(uint64_t frequency);
 
 // xdmad.c requires global pmc
 Pmc pmc;
@@ -155,6 +148,19 @@ void SamRH71Core_Init(void)
 		Pmc_setConfig(&pmc, &pmcConfig, 1000000u, &errCode);
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
+
+    uint64_t coreFrequency = SamRH71Core_GetMainClockFrequency();
+	setCoreClockFrequency(coreFrequency);
+
+    uint32_t systickReloadValue = (uint32_t)((coreFrequency * rtems_configuration_get_microseconds_per_tick()) / 1000000u);
+
+	Systick systick;
+	Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
+    Systick_Config systickConfig;
+    Systick_getConfig(&systick, &systickConfig);
+	systickConfig.reloadValue = systickReloadValue;
+
+	Systick_setConfig(&systick, &systickConfig);
 }
 
 void SamRH71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
