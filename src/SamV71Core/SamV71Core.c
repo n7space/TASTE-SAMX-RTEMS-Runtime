@@ -29,8 +29,6 @@
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
 
-#include <bsp/atsam-clock-config.h>
-
 #define CKGR_PLLAR_DIVA_Pos 0
 #define CKGR_PLLAR_DIVA_Msk (0xffu << CKGR_PLLAR_DIVA_Pos)
 #define CKGR_PLLAR_DIVA(value) \
@@ -58,18 +56,6 @@
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
-
-// structure used to overwrite RTEMS clock settings,
-// it is necessary because of PLLA and master clock reconfiguration during init
-// see https://docs.rtems.org/docs/6.1/user/bsps/arm/atsam.html
-const struct atsam_clock_config atsam_clock_config = {
-	.pllar_init =
-		(CKGR_PLLAR_ONE | CKGR_PLLAR_MULA(PLLA_MUL) |
-		 CKGR_PLLAR_PLLACOUNT(PLLA_COUNT) | CKGR_PLLAR_DIVA(PLLA_DIV)),
-	.mckr_init = (PMC_MCKR_PRES_CLK_2 | PMC_MCKR_CSS_PLLA_CLK |
-		      PMC_MCKR_MDIV_PCK_DIV2),
-	.mck_freq = RTEMS_MCK_FREQUENCY_FOR_SYSTICK
-};
 
 // xdmad.c requires global pmc
 Pmc pmc;
@@ -207,7 +193,7 @@ void SamV71Core_Init(void)
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
 
-	uint64_t coreFrequency = SamRH71Core_GetMainClockFrequency();
+	uint64_t coreFrequency = SamV71Core_GetMainClockFrequency();
 	setCoreClockFrequency(coreFrequency);
 
 	uint32_t systickReloadValue =
