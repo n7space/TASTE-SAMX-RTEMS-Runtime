@@ -48,7 +48,7 @@
 #define PMC_MCKR_MDIV_PCK_DIV2 (0x1u << 8)
 
 #define PLLA_MUL 24u
-#define PLLA_DIV 1u
+#define PLLA_DIV 3u
 #define PLLA_COUNT 60u
 
 #define MEGA_HZ 1000000u
@@ -159,6 +159,93 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 	}
 }
 
+// TODO add option to disable PLLA
+#if defined(SAMRH71_PLLA_MULTIPLIER)
+#undef SAMRH71_PLLA_MULTIPLIER
+#endif
+
+#if defined(SAMRH71_PLLA_DIVIDER)
+#undef SAMRH71_PLLA_DIVIDER
+#endif
+
+#if defined(SAMRH71_RCOSC_FREQUENCY)
+#undef SAMRH71_RCOSC_FREQUENCY
+#endif
+
+#if defined(SAMRH71_RCOSC_FREQUENCY_4)
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_4M
+#elif defined(SAMRH71_RCOSC_FREQUENCY_8)
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_8M
+#elif defined(SAMRH71_RCOSC_FREQUENCY_10)
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_10M
+#elif defined(SAMRH71_RCOSC_FREQUENCY_12)
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_12M
+#else
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_12M
+#endif
+
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE)
+#undef SAMRH71_MAIN_CLOCK_SOURCE
+#endif
+
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE_RCOSC)
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_RcOsc
+#elif defined(SAMRH81_MAIN_CLOCK_SOURCE_XOSC)
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_XOsc
+#elif defined(SAMRH81_MAIN_CLOCK_SOURCE_XOSC_BYPASSED)
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_XOscBypassed
+#else
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_RcOsc
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE)
+#undef SAMRH71_MASTER_CLOCK_SOURCE
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE_SLCK)
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Slck
+#elif defined(SAMRH71_MASTER_CLOCK_SOURCE_MAINCK)
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Mainck
+#elif defined(SAMRH71_MASTER_CLOCK_SOURCE_PLLACK)
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Pllack
+#else
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Pllack
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER)
+#undef SAMRH71_MASTER_CLOCK_PRESCALER
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_1)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_1
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_2)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_2
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_4)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_4
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_8)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_8
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_16)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_16
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_32)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_32
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_64
+#else
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_1
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_DIVIDER)
+#undef SAMRH71_MASTER_CLOCK_DIVIDER
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_DIVIDER_1)
+#define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_1
+#elif defined(SAMRH71_MASTER_CLOCK_DIVIDER_2)
+#define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_2
+#else
+#define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_2
+#endif
+
 void SamRH71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
@@ -173,15 +260,15 @@ void SamRH71Core_Init(void)
 	// Configure PLLA and master clock.
 	// This is default setting, unless RT_RTOS_NO_INIT is enabled.
 	const Pmc_Config pmcConfig = {
-		.mainck = { .src = Pmc_MainckSrc_RcOsc,
-			    .rcOscFreq = Pmc_RcOscFreq_12M,
-			    .xoscStartupTime = 0 },
+		.mainck = { .src = SAMRH71_MAIN_CLOCK_SOURCE,
+			    .rcOscFreq = SAMRH71_RCOSC_FREQUENCY,
+			    .xoscStartupTime = 0 }, // TODO configure also startup time, if xosc was selected
 		.pll = { .pllaMul = PLLA_MUL,
 			 .pllaDiv = PLLA_DIV,
 			 .pllaStartupTime = PLLA_COUNT },
-		.masterck = { .src = Pmc_MasterckSrc_Pllack,
-			      .presc = Pmc_MasterckPresc_2,
-			      .divider = Pmc_MasterckDiv_2 },
+		.masterck = { .src = SAMRH71_MASTER_CLOCK_SOURCE,
+			      .presc = SAMRH71_MASTER_CLOCK_PRESCALER,
+			      .divider = SAMRH71_MASTER_CLOCK_DIVIDER },
 		.pck = {},
 	};
 
