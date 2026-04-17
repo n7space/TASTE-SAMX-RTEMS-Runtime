@@ -50,7 +50,6 @@
 #define PLLA_MUL 24u
 #define PLLA_DIV 1u
 #define PLLA_COUNT 60u
-#define RTEMS_MCK_FREQUENCY_FOR_SYSTICK 75000000u
 
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
@@ -110,6 +109,51 @@ static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
 		} else if (pll_config.pllaDiv > 0 && pll_config.pllaMul == 0) {
 			*mck_frequency = *mck_frequency / pll_config.pllaDiv;
 		}
+	}
+}
+
+uint64_t SamV71Core_GetProcessorClockFrequency(void)
+{
+	Pmc_MasterckConfig master_clock_config;
+	Pmc_getMasterckConfig(&pmc, &master_clock_config);
+
+	uint64_t mck_frequency = extract_main_oscillator_frequency();
+	apply_plla_config(&master_clock_config, &mck_frequency);
+
+	switch (master_clock_config.presc) {
+	case Pmc_MasterckPresc_1: {
+		break;
+	}
+	case Pmc_MasterckPresc_2: {
+		mck_frequency = mck_frequency / 2;
+		break;
+	}
+	case Pmc_MasterckPresc_4: {
+		mck_frequency = mck_frequency / 4;
+		break;
+	}
+	case Pmc_MasterckPresc_8: {
+		mck_frequency = mck_frequency / 8;
+		break;
+	}
+	case Pmc_MasterckPresc_16: {
+		mck_frequency = mck_frequency / 16;
+		break;
+	}
+	case Pmc_MasterckPresc_32: {
+		mck_frequency = mck_frequency / 32;
+		break;
+	}
+	case Pmc_MasterckPresc_64: {
+		mck_frequency = mck_frequency / 64;
+		break;
+	}
+#if defined(N7S_TARGET_SAMV71Q21)
+	case Pmc_MasterckPresc_3: {
+		mck_frequency = mck_frequency / 7;
+		break;
+	}
+#endif
 	}
 }
 
@@ -193,7 +237,7 @@ void SamV71Core_Init(void)
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
 
-	uint64_t coreFrequency = SamV71Core_GetMainClockFrequency();
+	uint64_t coreFrequency = SamV71Core_GetProcessorClockFrequency();
 	setCoreClockFrequency(coreFrequency);
 
 	uint32_t systickReloadValue =
@@ -222,44 +266,7 @@ uint64_t SamV71Core_GetMainClockFrequency(void)
 	Pmc_MasterckConfig master_clock_config;
 	Pmc_getMasterckConfig(&pmc, &master_clock_config);
 
-	uint64_t mck_frequency = extract_main_oscillator_frequency();
-	apply_plla_config(&master_clock_config, &mck_frequency);
-
-	switch (master_clock_config.presc) {
-	case Pmc_MasterckPresc_1: {
-		break;
-	}
-	case Pmc_MasterckPresc_2: {
-		mck_frequency = mck_frequency / 2;
-		break;
-	}
-	case Pmc_MasterckPresc_4: {
-		mck_frequency = mck_frequency / 4;
-		break;
-	}
-	case Pmc_MasterckPresc_8: {
-		mck_frequency = mck_frequency / 8;
-		break;
-	}
-	case Pmc_MasterckPresc_16: {
-		mck_frequency = mck_frequency / 16;
-		break;
-	}
-	case Pmc_MasterckPresc_32: {
-		mck_frequency = mck_frequency / 32;
-		break;
-	}
-	case Pmc_MasterckPresc_64: {
-		mck_frequency = mck_frequency / 64;
-		break;
-	}
-#if defined(N7S_TARGET_SAMV71Q21)
-	case Pmc_MasterckPresc_3: {
-		mck_frequency = mck_frequency / 7;
-		break;
-	}
-#endif
-	}
+	uint64_t mck_frequency = SamV71Core_GetProcessorClockFrequency();
 
 	switch (master_clock_config.divider) {
 	case Pmc_MasterckDiv_1: {
