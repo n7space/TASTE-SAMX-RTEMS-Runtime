@@ -135,6 +135,7 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 	}
 #endif
 	}
+    return mck_frequency;
 }
 
 #if defined(SAMRH71_CPU_FREQUENCY_100MHZ) ||    \
@@ -244,7 +245,7 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 #endif
 #if SAMRH71_PLLA_MULTIPLIER < 0 || SAMRH71_PLLA_MULTIPLIER > 25
 #error "SAMRH71_PLLA_MULTIPLIER shall be between 0 and 25"
-#pendif
+#endif
 #else
 #define SAMRH71_PLLA_MULTIPLIER 24
 #endif
