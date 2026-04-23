@@ -29,28 +29,6 @@
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
 
-#define CKGR_PLLAR_DIVA_Pos 0
-#define CKGR_PLLAR_DIVA_Msk (0xffu << CKGR_PLLAR_DIVA_Pos)
-#define CKGR_PLLAR_DIVA(value) \
-	((CKGR_PLLAR_DIVA_Msk & ((value) << CKGR_PLLAR_DIVA_Pos)))
-#define CKGR_PLLAR_PLLACOUNT_Pos 8
-#define CKGR_PLLAR_PLLACOUNT_Msk (0x3fu << CKGR_PLLAR_PLLACOUNT_Pos)
-#define CKGR_PLLAR_PLLACOUNT(value) \
-	((CKGR_PLLAR_PLLACOUNT_Msk & ((value) << CKGR_PLLAR_PLLACOUNT_Pos)))
-#define CKGR_PLLAR_MULA_Pos 16
-#define CKGR_PLLAR_MULA_Msk (0x7ffu << CKGR_PLLAR_MULA_Pos)
-#define CKGR_PLLAR_MULA(value) \
-	((CKGR_PLLAR_MULA_Msk & ((value) << CKGR_PLLAR_MULA_Pos)))
-#define CKGR_PLLAR_ONE (0x1u << 29)
-
-#define PMC_MCKR_PRES_CLK_2 (0x1u << 4)
-#define PMC_MCKR_CSS_PLLA_CLK (0x2u << 0)
-#define PMC_MCKR_MDIV_PCK_DIV2 (0x1u << 8)
-
-#define PLLA_MUL 24u
-#define PLLA_DIV 1u
-#define PLLA_COUNT 60u
-
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
@@ -157,7 +135,341 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 	}
 #endif
 	}
+    return mck_frequency;
 }
+
+#if defined(SAMRH71_CPU_FREQUENCY_100MHZ) ||    \
+	defined(SAMRH71_CPU_FREQUENCY_90MHZ) || \
+	defined(SAMRH71_CPU_FREQUENCY_80MHZ) || \
+	defined(SAMRH71_CPU_FREQUENCY_75MHZ) || \
+	defined(SAMRH71_CPU_FREQUENCY_72MHZ) || \
+	defined(SAMRH71_CPU_FREQUENCY_60MHZ) || \
+	defined(SAMRH71_CPU_FREQUENCY_50MHZ) || \
+	defined(SAMRH71_CPU_FREQUENCY_25MHZ)
+#if defined(RT_RTOS_NO_INIT)
+#error "Processor frequency cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#if defined(SAMRH71_PLLA_MULTIPLIER) || defined(SAMRH71_PLLA_DIVIDER) || \
+	defined(SAMRH71_RCOSC_FREQUENCY_4) ||                            \
+	defined(SAMRH71_RCOSC_FREQUENCY_8) ||                            \
+	defined(SAMRH71_RCOSC_FREQUENCY_10) ||                           \
+	defined(SAMRH71_RCOSC_FREQUENCY_12) ||                           \
+	defined(SAMRH71_MAIN_CLOCK_SOURCE_RCOSC) ||                      \
+	defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC) ||                       \
+	defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC_BYPASSED) ||              \
+	defined(SAMRH71_MASTER_CLOCK_SOURCE_SLCK) ||                     \
+	defined(SAMRH71_MASTER_CLOCK_SOURCE_MAINCK) ||                   \
+	defined(SAMRH71_MASTER_CLOCK_SOURCE_PLLACK) ||                   \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_1) ||                     \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_2) ||                     \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_4) ||                     \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_8) ||                     \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_16) ||                    \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) ||                    \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64) ||                    \
+	defined(SAMRH71_MASTER_CLOCK_DIVIDER_1) ||                       \
+	defined(SAMRH71_MASTER_CLOCK_DIVIDER_2)
+#error "Low level configuration cannot be used when setting processor frequency directly"
+#endif
+#endif
+
+#if defined(SAMRH71_CPU_FREQUENCY_100MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 24
+#define SAMRH71_PLLA_DIVIDER 3
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_1
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_90MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 14
+#define SAMRH71_PLLA_DIVIDER 1
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_2
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_80MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 19
+#define SAMRH71_PLLA_DIVIDER 1
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_3
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_75MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 24
+#define SAMRH71_PLLA_DIVIDER 2
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_2
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_72MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 17
+#define SAMRH71_PLLA_DIVIDER 1
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_3
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_60MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 19
+#define SAMRH71_PLLA_DIVIDER 2
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_2
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_50MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 24
+#define SAMRH71_PLLA_DIVIDER 3
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_2
+#define SAMRH71_MASTER_CLOCK_DIVIDER_2
+#elif defined(SAMRH71_CPU_FREQUENCY_25MHZ)
+#define SAMRH71_RCOSC_FREQUENCY_12
+#define SAMRH71_MAIN_CLOCK_SOURCE_RCOSC
+#define SAMRH71_PLLA_MULTIPLIER 24
+#define SAMRH71_PLLA_DIVIDER 3
+#define SAMRH71_MASTER_CLOCK_SOURCE_PLLACK
+#define SAMRH71_MASTER_CLOCK_PRESCALER_4
+#define SAMRH71_MASTER_CLOCK_DIVIDER_1
+#endif
+
+#if defined(SAMRH71_PLLA_MULTIPLIER) // 0-25
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_PLLA_MULTIPLIER cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#if SAMRH71_PLLA_MULTIPLIER < 0 || SAMRH71_PLLA_MULTIPLIER > 25
+#error "SAMRH71_PLLA_MULTIPLIER shall be between 0 and 25"
+#endif
+#else
+#define SAMRH71_PLLA_MULTIPLIER 24
+#endif
+
+#if defined(SAMRH71_PLLA_DIVIDER) // 0-64
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_PLLA_DIVIDER cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#if SAMRH71_PLLA_DIVIDER < 0 || SAMRH71_PLLA_DIVIDER > 64
+#error "SAMRH71_PLLA_DIVIDER shall be between 0 and 64"
+#endif
+#else
+#define SAMRH71_PLLA_DIVIDER 3
+#endif
+
+#if defined(SAMRH71_PLLA_STARTUP_TIME)
+#if
+Kdefined(RT_RTOS_NO_INIT)
+#error "SAMRH71_PLLA_STARTUP_TIME cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#if SAMRH71_PLLA_STARTUP_TIME < 0 || SAMRH71_PLLA_STARTUP_TIME > 63
+#error "SAMRH71_PLLA_STARTUP_TIME shall be between 0 and 63"
+#endif
+#else
+#define SAMRH71_PLLA_STARTUP_TIME 60
+#endif
+
+#if defined(SAMRH71_RCOSC_XOSC_STARTUP_TIME)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_RCOSC_XOSC_STARTUP_TIME cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#if SAMRH71_RCOSC_XOSC_STARTUP_TIME < 0 || \
+	SAMRH71_RCOSC_XOSC_STARTUP_TIME > 2040
+#error "SAMRH71_RCOSC_XOSC_STARTUP_TIME shall be between 0 and 2040"
+#endif
+#if SAMRH71_RCOSC_XOSC_STARTUP_TIME % 8 != 0
+#error "SAMRH71_RCOSC_XOSC_STARTUP_TIME shall be multiple of 8"
+#endif
+#else
+#define SAMRH71_RCOSC_XOSC_STARTUP_TIME 0
+#endif
+
+#if defined(SAMRH71_RCOSC_FREQUENCY)
+#undef SAMRH71_RCOSC_FREQUENCY
+#endif
+
+#if defined(SAMRH71_RCOSC_FREQUENCY_4) ||      \
+	defined(SAMRH71_RCOSC_FREQUENCY_8) ||  \
+	defined(SAMRH71_RCOSC_FREQUENCY_10) || \
+	defined(SAMRH71_RCOSC_FREQUENCY_12)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_RCOSC_FREQUENCY_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_RCOSC_FREQUENCY_4)
+#if defined(SAMRH71_RCOSC_FREQUENCY_8) ||      \
+	defined(SAMRH71_RCOSC_FREQUENCY_10) || \
+	defined(SAMRH71_RCOSC_FREQUENCY_12)
+#error "Only one of the macros SAMRH71_RCOSC_FREQUENCY_* shall be defined at once."
+#endif
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_4M
+#elif defined(SAMRH71_RCOSC_FREQUENCY_8)
+#if defined(SAMRH71_RCOSC_FREQUENCY_10) || defined(SAMRH71_RCOSC_FREQUENCY_12)
+#error "Only one of the macros SAMRH71_RCOSC_FREQUENCY_* shall be defined at once."
+#endif
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_8M
+#elif defined(SAMRH71_RCOSC_FREQUENCY_10)
+#if defined(SAMRH71_RCOSC_FREQUENCY_12)
+#error "Only one of the macros SAMRH71_RCOSC_FREQUENCY_* shall be defined at once."
+#endif
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_10M
+#elif defined(SAMRH71_RCOSC_FREQUENCY_12)
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_12M
+#else
+#define SAMRH71_RCOSC_FREQUENCY Pmc_RcOscFreq_12M
+#endif
+
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE)
+#undef SAMRH71_MAIN_CLOCK_SOURCE
+#endif
+
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE_RCOSC) ||    \
+	defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC) || \
+	defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC_BYPASSED)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_MAIN_CLOCK_SOURCE_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE_RCOSC)
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC) || \
+	defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC_BYPASSED)
+#error "Only one of the macros SAMRH71_MAIN_CLOCK_SOURCE_* shall be defined at once."
+#endif
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_RcOsc
+#elif defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC)
+#if defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC_BYPASSED)
+#error "Only one of the macros SAMRH71_MAIN_CLOCK_SOURCE_* shall be defined at once."
+#endif
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_XOsc
+#elif defined(SAMRH71_MAIN_CLOCK_SOURCE_XOSC_BYPASSED)
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_XOscBypassed
+#else
+#define SAMRH71_MAIN_CLOCK_SOURCE Pmc_MainckSrc_RcOsc
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE)
+#undef SAMRH71_MASTER_CLOCK_SOURCE
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE_SLCK) ||       \
+	defined(SAMRH71_MASTER_CLOCK_SOURCE_MAINCK) || \
+	defined(SAMRH71_MASTER_CLOCK_SOURCE_PLLACK)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_MASTER_CLOCK_SOURCE_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE_SLCK)
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Slck
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE_MAINCK) || \
+	defined(SAMRH71_MASTER_CLOCK_SOURCE_PLLACK)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_SOURCE_* shall be defined at once."
+#endif
+#elif defined(SAMRH71_MASTER_CLOCK_SOURCE_MAINCK)
+#if defined(SAMRH71_MASTER_CLOCK_SOURCE_PLLACK)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_SOURCE_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Mainck
+#elif defined(SAMRH71_MASTER_CLOCK_SOURCE_PLLACK)
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Pllack
+#else
+#define SAMRH71_MASTER_CLOCK_SOURCE Pmc_MasterckSrc_Pllack
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER)
+#undef SAMRH71_MASTER_CLOCK_PRESCALER
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_1) ||      \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_2) ||  \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_4) ||  \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_8) ||  \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_16) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_MASTER_CLOCK_PRESCALER_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_1)
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_2) ||      \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_4) ||  \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_8) ||  \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_16) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_PRESCALER_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_1
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_2)
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_4) ||      \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_8) ||  \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_16) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_PRESCALER_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_2
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_4)
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_8) ||      \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_16) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_PRESCALER_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_4
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_8)
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_16) ||     \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_PRESCALER_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_8
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_16)
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_32) || \
+	defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_PRESCALER_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_16
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_32)
+#if defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#error "Only one of the macros SAMRH71_MASTER_CLOCK_PRESCALER_* shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_32
+#elif defined(SAMRH71_MASTER_CLOCK_PRESCALER_64)
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_64
+#else
+#define SAMRH71_MASTER_CLOCK_PRESCALER Pmc_MasterckPresc_1
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_DIVIDER)
+#undef SAMRH71_MASTER_CLOCK_DIVIDER
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_DIVIDER_1) || \
+	defined(SAMRH71_MASTER_CLOCK_DIVIDER_2)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_MASTER_CLOCK_DIVIDER_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_MASTER_CLOCK_DIVIDER_1)
+#if defined(SAMRH71_MASTER_CLOCK_DIVIDER_2)
+#error "Only one of SAMRH71_MASTER_CLOCK_DIVIDER_1, SAMRH71_MASTER_CLOCK_DIVIDER_2 shall be defined at once."
+#endif
+#define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_1
+#elif defined(SAMRH71_MASTER_CLOCK_DIVIDER_2)
+#define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_2
+#else
+#define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_2
+#endif
 
 void SamRH71Core_Init(void)
 {
@@ -173,15 +485,16 @@ void SamRH71Core_Init(void)
 	// Configure PLLA and master clock.
 	// This is default setting, unless RT_RTOS_NO_INIT is enabled.
 	const Pmc_Config pmcConfig = {
-		.mainck = { .src = Pmc_MainckSrc_RcOsc,
-			    .rcOscFreq = Pmc_RcOscFreq_12M,
-			    .xoscStartupTime = 0 },
-		.pll = { .pllaMul = PLLA_MUL,
-			 .pllaDiv = PLLA_DIV,
-			 .pllaStartupTime = PLLA_COUNT },
-		.masterck = { .src = Pmc_MasterckSrc_Pllack,
-			      .presc = Pmc_MasterckPresc_2,
-			      .divider = Pmc_MasterckDiv_2 },
+		.mainck = { .src = SAMRH71_MAIN_CLOCK_SOURCE,
+			    .rcOscFreq = SAMRH71_RCOSC_FREQUENCY,
+			    .xoscStartupTime =
+				    SAMRH71_RCOSC_XOSC_STARTUP_TIME },
+		.pll = { .pllaMul = SAMRH71_PLLA_MULTIPLIER,
+			 .pllaDiv = SAMRH71_PLLA_DIVIDER,
+			 .pllaStartupTime = SAMRH71_PLLA_STARTUP_TIME },
+		.masterck = { .src = SAMRH71_MASTER_CLOCK_SOURCE,
+			      .presc = SAMRH71_MASTER_CLOCK_PRESCALER,
+			      .divider = SAMRH71_MASTER_CLOCK_DIVIDER },
 		.pck = {},
 	};
 
