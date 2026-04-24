@@ -28,16 +28,18 @@
 extern const uint32_t log_buffer_start;
 extern const uint32_t log_buffer_end;
 
-#define RT_EXEC_LOG_BUFFER_SIZE \
-    (((uint32_t)&log_buffer_end - (uint32_t)&log_buffer_start) \
-    / sizeof(struct Monitor_InterfaceActivationEntry))
+#define RT_EXEC_LOG_BUFFER_SIZE                                      \
+	(((uint32_t)&log_buffer_end - (uint32_t)&log_buffer_start) / \
+	 sizeof(struct Monitor_InterfaceActivationEntry))
 
 static volatile bool is_frozen = true;
 static uint64_t activation_entry_counter = 0;
 
-__attribute__((section(".logsection"), aligned(RT_EXEC_LOG_BUFFER_ALIGNMENT)))
-static struct Monitor_InterfaceActivationEntry *const activation_log_buffer = 
-	(struct Monitor_InterfaceActivationEntry *const)&log_buffer_start;
+__attribute__((
+	section(".logsection"),
+	aligned(RT_EXEC_LOG_BUFFER_ALIGNMENT))) static struct Monitor_InterfaceActivationEntry
+	*const activation_log_buffer = (struct Monitor_InterfaceActivationEntry
+						*const)&log_buffer_start;
 #endif
 
 #define STACK_BYTE_PATTERN (uint32_t)0xA5A5A5A5
@@ -201,6 +203,7 @@ bool Monitor_MonitoringTick(void)
 	// update information about cpu usage
 	rtems_task_iterate(cpu_usage_visitor, NULL);
 	benchmarking_ticks++;
+	return true;
 }
 
 bool Monitor_GetUsageData(const enum interfaces_enum interface,
@@ -250,23 +253,24 @@ bool Monitor_SetMessageQueueOverflowCallback(
 	return true;
 }
 
-int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface)
+uint32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface)
 {
 	if (interface_to_queue_map[interface] == RTEMS_ID_NONE) {
-		return -1;
+		return UINT32_MAX;
 	}
 
 	uint32_t count;
 	if (rtems_message_queue_get_number_pending(
 		    interface_to_queue_map[interface], &count) !=
 	    RTEMS_SUCCESSFUL) {
-		return -1;
+		return UINT32_MAX;
 	}
 
-	return (int32_t)count;
+	return count;
 }
 
-int32_t Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface)
+uint32_t
+Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface)
 {
 	return maximum_queued_items[interface];
 }
@@ -298,7 +302,8 @@ bool Monitor_GetInterfaceActivationEntryLog(
 		*out_size_of_activation_log = 0;
 	} else {
 		*out_latest_activation_entry_index =
-			(activation_entry_counter % RT_EXEC_LOG_BUFFER_SIZE) - 1;
+			(activation_entry_counter % RT_EXEC_LOG_BUFFER_SIZE) -
+			1;
 
 		if (activation_entry_counter > RT_EXEC_LOG_BUFFER_SIZE) {
 			*out_size_of_activation_log = RT_EXEC_LOG_BUFFER_SIZE;

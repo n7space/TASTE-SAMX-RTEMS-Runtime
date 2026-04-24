@@ -53,7 +53,7 @@ static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
 static ConcurrentAccessFlag reloads_modified_flag;
 static volatile uint32_t reloads_counter;
-static Tic tic = {};
+static Tic tic;
 static bool idleTaskIsWatchdogEnabled = false;
 
 static uint64_t main_clock_frequency;
@@ -162,11 +162,12 @@ static void Hal_InitTimer(void)
 	Tic_init(&tic, Tic_Id_0);
 	Tic_writeProtect(&tic, false);
 
-	Tic_ChannelConfig config = {};
-	config.isEnabled = true;
-	config.clockSource = Tic_ClockSelection_MckBy8;
-	config.irqConfig.isCounterOverflowIrqEnabled = true;
-	config.rc = 65535u;
+	Tic_ChannelConfig config = {
+		.isEnabled = true,
+		.clockSource = Tic_ClockSelection_MckBy8,
+		.irqConfig.isCounterOverflowIrqEnabled = true,
+		.rc = 65535u,
+	};
 	Tic_setChannelConfig(&tic, Tic_Channel_0, &config);
 
 	Tic_triggerChannel(&tic, Tic_Channel_0);
@@ -178,7 +179,7 @@ bool Hal_Init(void)
 #if defined(N7S_TARGET_SAMV71Q21)
 	SamV71Core_Init();
 #elif defined(N7S_TARGET_SAMRH71F20)
-    SamRH71Core_Init();
+	SamRH71Core_Init();
 #endif
 
 	Hal_InitTimer();
@@ -273,11 +274,13 @@ bool Hal_SemaphoreRelease(int32_t id)
 	return result == RTEMS_SUCCESSFUL;
 }
 
-void Hal_IdleTask(uintptr_t ignored)
+void *Hal_IdleTask(uintptr_t ignored)
 {
 	while (1) {
 		Hal_ResetWatchdog();
 	}
+
+	return NULL;
 }
 
 enum Reset_Reason Hal_GetResetReason()
