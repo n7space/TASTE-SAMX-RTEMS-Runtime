@@ -155,6 +155,7 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 	}
 #endif
 	}
+    return mck_frequency;
 }
 
 void SamV71Core_Init(void)
