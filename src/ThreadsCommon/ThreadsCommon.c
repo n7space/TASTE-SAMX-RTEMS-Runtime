@@ -141,13 +141,15 @@ bool ThreadsCommon_ProcessRequest(const void *const request_data,
 {
 	call_function cast_user_function = (call_function)user_function;
 
-	Monitor_IndicateInterfaceActivated((const enum interfaces_enum)thread_id);
+	Monitor_IndicateInterfaceActivated(
+		(const enum interfaces_enum)thread_id);
 
 	const uint64_t time_before_execution = Hal_GetElapsedTimeInNs();
 	cast_user_function((const char *)request_data, request_size);
 	const uint64_t time_after_execution = Hal_GetElapsedTimeInNs();
 
-	Monitor_IndicateInterfaceDeactivated((const enum interfaces_enum)thread_id);
+	Monitor_IndicateInterfaceDeactivated(
+		(const enum interfaces_enum)thread_id);
 
 	threads_info[thread_id].thread_execution_time =
 		time_after_execution - time_before_execution;
@@ -165,9 +167,9 @@ bool ThreadsCommon_SendRequest(const void *const request_data,
 	const rtems_status_code result = rtems_message_queue_send(
 		(rtems_id)queue_id, request_data, request_size);
 
-	int32_t queued_items_count = Monitor_GetQueuedItemsCount(
+	uint32_t queued_items_count = Monitor_GetQueuedItemsCount(
 		(const enum interfaces_enum)thread_id);
-	if (queued_items_count > -1 &&
+	if (queued_items_count != UINT32_MAX &&
 	    queued_items_count > maximum_queued_items[thread_id]) {
 		maximum_queued_items[thread_id] = queued_items_count;
 	}

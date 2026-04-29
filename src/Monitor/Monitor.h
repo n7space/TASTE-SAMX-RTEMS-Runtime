@@ -74,7 +74,7 @@ struct Monitor_InterfaceActivationEntry {
 
 /**
  * @brief                                       Typedef of callback indicating interface message queue overflow
- * 
+ *
  * @param[in] interface                         represents interface which queue overflowed
  * @param[in] number_of_overflowed_messages     represents number of overflowed messages
  *
@@ -94,9 +94,9 @@ extern Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
 bool Monitor_Init(void);
 
 /**
- * @brief                       Gathers monitoring information about every sporadic/cyclic interface and update 
+ * @brief                       Gathers monitoring information about every sporadic/cyclic interface and update
  *                              internal data structure that hold these information.
- * 
+ *
  * @return                      Bool indicating whether the tick was successful
  */
 bool Monitor_MonitoringTick(void);
@@ -108,7 +108,7 @@ bool Monitor_MonitoringTick(void);
  * @param[in] interface         Represents interface to obtain usage data
  * @param[out] usage_data       pointer to struct representing usage data of given sporadic/cyclic
  *                              interface, it is considered an output parameter
- * 
+ *
  * @return                      Bool indicating whether the query about usage data was successful
  */
 bool Monitor_GetUsageData(const enum interfaces_enum interface,
@@ -120,7 +120,7 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface,
  *
  * @param[out] cpu_usage_data   pointer to struct representing idle usage data regarding time when CPU was
  *                              not used by any sporadic/cyclic interface
- * 
+ *
  * @return                      Bool indicating whether the query about CPU usage data was successful
  */
 bool Monitor_GetIdleCPUUsageData(
@@ -130,7 +130,7 @@ bool Monitor_GetIdleCPUUsageData(
  * @brief                       Returns maximum stack usage in bytes of a given sporadic/cyclic interface.
  *
  * @param[in] interface         represents interface to obtain information about stack usage
- * 
+ *
  * @return                      represents maximum stack usage in bytes if >= 0, and error otherwise.
  */
 int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
@@ -139,7 +139,7 @@ int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
  * @brief                        Set message queue overflow callback.
  *
  * @param[in] overflow_callback  pointer to function that implements message queue overflow callback
- * 
+ *
  * @return                       indicates whether the set was successful.
  */
 bool Monitor_SetMessageQueueOverflowCallback(
@@ -149,40 +149,40 @@ bool Monitor_SetMessageQueueOverflowCallback(
  * @brief                        Checks and returns current number of queued items in sporadic interface queue
  *
  * @param[in] interface          represents interface to obtain information about stack usage
- * 
- * @return                       represents the number of queued items in interface queue if >= 0, and error otherwise.
+ *
+ * @return                       represents the number of queued items in interface queue if >= 0, and UINT32_MAX otherwise.
  */
-int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface);
+uint32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface);
 
 /**
  * @brief                        Checks and returns maximum reached number of queued items in sporadic interface queue
  *
  * @param[in] interface          represents interface to obtain information about maximum queue usage
- * 
+ *
  * @return                       represents the maximum number of queued items in interface queue if >= 0, and error otherwise.
  */
-int32_t
+uint32_t
 Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface);
 
 /**
- * @brief                       Informs the monitor about given interface activation, 
- *                              monitor stores timestamp of activation in specific 
+ * @brief                       Informs the monitor about given interface activation,
+ *                              monitor stores timestamp of activation in specific
  *                              configurable memory location.
  *
  * @param[in] interface         enum representing activated interface
- * 
+ *
  * @return                      Bool indicating whether the indication was
  *                              successful
  */
 bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface);
 
 /**
- * @brief                       Informs the monitor about given interface deactivation, 
- *                              monitor stores timestamp of deactivation in specific 
+ * @brief                       Informs the monitor about given interface deactivation,
+ *                              monitor stores timestamp of deactivation in specific
  *                              configurable memory location.
  *
  * @param[in] interface         enum representing deactivated interface
- * 
+ *
  * @return                      Bool indicating whether the indication was
  *                              successful
  */
@@ -191,11 +191,11 @@ bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface);
 /**
  * @brief                                            Provides access to optional interface activation log.
  *
- * @param[out] activation_log                        pointer pointing to beginning of cyclic buffer holding 
+ * @param[out] activation_log                        pointer pointing to beginning of cyclic buffer holding
  *                                                   all activation entries
  * @param[out] out_latest_activation_entry_index     representing latest activation log index
  * @param[out] out_size_of_activation_log            representing size of activation log
- * 
+ *
  * @return                                           Bool indicating whether the query was successful
  */
 bool Monitor_GetInterfaceActivationEntryLog(
@@ -204,24 +204,24 @@ bool Monitor_GetInterfaceActivationEntryLog(
 	uint32_t *out_size_of_activation_log);
 
 /**
- * @brief                       Stops storing of interface activation logs, all activation 
+ * @brief                       Stops storing of interface activation logs, all activation
  *                              logs are lost after this operation
- * 
+ *
  * @return                      Bool indicating whether the freeze was successful
  */
 bool Monitor_FreezeInterfaceActivationLogging();
 
 /**
  * @brief                       Starts storing of interface activation logs
- * 
+ *
  * @return                      Bool indicating whether the unfreeze was successful
  */
 bool Monitor_UnfreezeInterfaceActivationLogging();
 
 /**
- * @brief                       Clears all interface activation logs, resets latest_activation_entry_index 
+ * @brief                       Clears all interface activation logs, resets latest_activation_entry_index
  *                              and size_of_activation_log
- * 
+ *
  * @return                      Bool indicating whether the clear was successful
  */
 bool Monitor_ClearInterfaceActivationLog();

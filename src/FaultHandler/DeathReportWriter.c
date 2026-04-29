@@ -50,7 +50,7 @@ static uint16_t calculate_crc(const uint8_t *const data, const size_t length)
 {
 	uint16_t crc = CRC_INITIAL_VALUE;
 
-	for (int i = 0; i < length; i++) {
+	for (unsigned int i = 0; i < length; i++) {
 		crc ^= (uint16_t)data[i] << 8;
 		for (int j = 0; j < 8; j++) {
 			if (crc & CRC_MOST_SYGNIFICANT_BIT)
