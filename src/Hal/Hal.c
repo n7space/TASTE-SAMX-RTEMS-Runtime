@@ -277,7 +277,9 @@ bool Hal_SemaphoreRelease(int32_t id)
 void *Hal_IdleTask(uintptr_t ignored)
 {
 	while (1) {
-		Hal_ResetWatchdog();
+        if(idleTaskIsWatchdogEnabled) {
+            Hal_ResetWatchdog();
+        }
 	}
 
 	return NULL;

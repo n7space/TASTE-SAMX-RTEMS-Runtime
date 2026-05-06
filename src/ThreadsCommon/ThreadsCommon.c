@@ -137,7 +137,7 @@ bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
 
 bool ThreadsCommon_ProcessRequest(const void *const request_data,
 				  const uint32_t request_size,
-				  void *user_function, const uint32_t thread_id)
+				  void (*user_function)(const char *, size_t), const uint32_t thread_id)
 {
 	call_function cast_user_function = (call_function)user_function;
 
