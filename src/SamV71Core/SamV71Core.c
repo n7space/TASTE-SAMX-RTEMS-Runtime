@@ -56,6 +56,8 @@
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
 
+extern void setCoreClockFrequency(uint64_t frequency);
+
 // xdmad.c requires global pmc
 Pmc pmc;
 static Mpu mpu;
