@@ -62,6 +62,8 @@ handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
 				    const enum Monitor_EntryType entry_type)
 {
 #ifndef RT_EXEC_LOG_ACTIVE
+	(void)interface;
+	(void)entry_type;
 	return false;
 #else
 	if (is_frozen) {
@@ -82,6 +84,7 @@ handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
 
 static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
 {
+	(void)arg;
 	float usage_percent;
 	uint32_t integer_val;
 	uint32_t float_val;
@@ -148,10 +151,11 @@ static inline uint32_t calculate_used_stack(void *stack_start,
 					    void *high_water_mark)
 {
 #if (CPU_STACK_GROWS_UP == TRUE)
-	return (uint8_t *)(high_water_mark) - (uint8_t *)(stack_start);
+	return (uint32_t)((uint8_t *)(high_water_mark) -
+			  (uint8_t *)(stack_start));
 #else
-	return ((uint8_t *)(stack_start) + (stack_size)) -
-	       (uint8_t *)(high_water_mark);
+	return (uint32_t)(((uint8_t *)(stack_start) + (stack_size)) -
+			  (uint8_t *)(high_water_mark));
 #endif
 }
 
@@ -240,7 +244,7 @@ int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface)
 	rtems_task_iterate(thread_stack_usage_visitor, &stack_usage);
 
 	if (stack_usage.is_found) {
-		return stack_usage.maximum_stack_usage;
+		return (int32_t)stack_usage.maximum_stack_usage;
 	}
 
 	return -1;
@@ -293,6 +297,9 @@ bool Monitor_GetInterfaceActivationEntryLog(
 	uint32_t *out_size_of_activation_log)
 {
 #ifndef RT_EXEC_LOG_ACTIVE
+	(void)activation_log;
+	(void)out_latest_activation_entry_index;
+	(void)out_size_of_activation_log;
 	return false;
 #else
 	*activation_log = activation_log_buffer;

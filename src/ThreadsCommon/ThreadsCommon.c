@@ -67,6 +67,7 @@ static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 
 static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index)
 {
+	(void)timer_id;
 	uintptr_t index = (uintptr_t)cyclic_request_data_index;
 
 	rtems_message_queue_send((rtems_id)cyclic_request_data[index].queue_id,
@@ -137,7 +138,8 @@ bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
 
 bool ThreadsCommon_ProcessRequest(const void *const request_data,
 				  const uint32_t request_size,
-				  void (*user_function)(const char *, size_t), const uint32_t thread_id)
+				  void (*user_function)(const char *, size_t),
+				  const uint32_t thread_id)
 {
 	call_function cast_user_function = (call_function)user_function;
 

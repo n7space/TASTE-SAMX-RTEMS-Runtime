@@ -75,7 +75,7 @@ bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
  */
 bool ThreadsCommon_ProcessRequest(const void *const request_data,
 				  const uint32_t request_size,
-				  void (*user_function)(const char *,size_t),
+				  void (*user_function)(const char *, size_t),
 				  const uint32_t thread_id);
 
 /**

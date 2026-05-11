@@ -11,7 +11,8 @@ target_sources(Samv71RuntimeXdmac
 target_include_directories(Samv71RuntimeXdmac
     PRIVATE     ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(Samv71RuntimeXdmac
-    PRIVATE     SAMV71::Pmc
+    PRIVATE     common_build_options
+                SAMV71::Pmc
                 Samv71Scb
                 SAMV71::Runtime::Hal)
 

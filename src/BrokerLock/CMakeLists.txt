@@ -4,6 +4,8 @@ target_sources(BrokerLock
     PUBLIC      BrokerLock.h)
 target_include_directories(BrokerLock
     PRIVATE     ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(BrokerLock
+    PRIVATE     common_build_options)
 
 add_format_target(BrokerLock)
 
