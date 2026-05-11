@@ -135,7 +135,7 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 	}
 #endif
 	}
-    return mck_frequency;
+	return mck_frequency;
 }
 
 #if defined(SAMRH71_CPU_FREQUENCY_100MHZ) ||    \
@@ -262,8 +262,7 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 #endif
 
 #if defined(SAMRH71_PLLA_STARTUP_TIME)
-#if
-Kdefined(RT_RTOS_NO_INIT)
+#if defined(RT_RTOS_NO_INIT)
 #error "SAMRH71_PLLA_STARTUP_TIME cannot be defined together with RT_RTOS_NO_INIT"
 #endif
 #if SAMRH71_PLLA_STARTUP_TIME < 0 || SAMRH71_PLLA_STARTUP_TIME > 63
@@ -495,7 +494,9 @@ void SamRH71Core_Init(void)
 		.masterck = { .src = SAMRH71_MASTER_CLOCK_SOURCE,
 			      .presc = SAMRH71_MASTER_CLOCK_PRESCALER,
 			      .divider = SAMRH71_MASTER_CLOCK_DIVIDER },
-		.pck = {},
+		.pck = { { .isEnabled = false,
+			   .src = Pmc_PckSrc_Slck,
+			   .presc = 0 } },
 	};
 
 	ErrorCode errCode = ErrorCode_NoError;
