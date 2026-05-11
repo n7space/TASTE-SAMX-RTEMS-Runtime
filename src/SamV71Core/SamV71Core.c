@@ -109,7 +109,7 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 		break;
 	}
 	case Pmc_MasterckPresc_3: {
-		mck_frequency = mck_frequency / 7;
+		mck_frequency = mck_frequency / 3;
 		break;
 	}
 	case Pmc_MasterckPresc_4: {
@@ -195,7 +195,7 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 #define SAMV71_MASTER_CLOCK_DIVIDER_2
 #elif defined(SAMV71_CPU_FREQUENCY_75MHZ)
 #define SAMV71_RCOSC_FREQUENCY_12
-#define SAMV71_MAIN_CLOCK_SOU2RCE_RCOSC
+#define SAMV71_MAIN_CLOCK_SOURCE_RCOSC
 #define SAMV71_PLLA_MULTIPLIER 24
 #define SAMV71_PLLA_DIVIDER 1 // PLLA 300 MHz
 #define SAMV71_MASTER_CLOCK_SOURCE_PLLACK
@@ -224,7 +224,7 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 #error "SAMV71_PLLA_MULTIPLIER cannot be defined together with RT_RTOS_NO_INIT"
 #endif
 #if SAMV71_PLLA_MULTIPLIER < 0 || SAMV71_PLLA_MULTIPLIER > 62
-#error "SAMV71_PLLA_MULTIPLIER shall be between 0 and 25"
+#error "SAMV71_PLLA_MULTIPLIER shall be between 0 and 62"
 #endif
 #else
 #define SAMV71_PLLA_MULTIPLIER 24
@@ -235,7 +235,7 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 #error "SAMV71_PLLA_DIVIDER cannot be defined together with RT_RTOS_NO_INIT"
 #endif
 #if SAMV71_PLLA_DIVIDER < 0 || SAMV71_PLLA_DIVIDER > 255
-#error "SAMV71_PLLA_DIVIDER shall be between 0 and 64"
+#error "SAMV71_PLLA_DIVIDER shall be between 0 and 255"
 #endif
 #else
 #define SAMV71_PLLA_DIVIDER 1
@@ -271,7 +271,6 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 #endif
 
 #if defined(SAMV71_RCOSC_FREQUENCY_4) || defined(SAMV71_RCOSC_FREQUENCY_8) || \
-	defined(SAMV71_RCOSC_FREQUENCY_10) ||                                 \
 	defined(SAMV71_RCOSC_FREQUENCY_12)
 #if defined(RT_RTOS_NO_INIT)
 #error "SAMV71_RCOSC_FREQUENCY_* cannot be defined together with RT_RTOS_NO_INIT"
@@ -279,8 +278,7 @@ uint64_t SamV71Core_GetProcessorClockFrequency(void)
 #endif
 
 #if defined(SAMV71_RCOSC_FREQUENCY_4)
-#if defined(SAMV71_RCOSC_FREQUENCY_8) || defined(SAMV71_RCOSC_FREQUENCY_10) || \
-	defined(SAMV71_RCOSC_FREQUENCY_12)
+#if defined(SAMV71_RCOSC_FREQUENCY_8) || defined(SAMV71_RCOSC_FREQUENCY_12)
 #error "Only one of the macros SAMV71_RCOSC_FREQUENCY_* shall be defined at once."
 #endif
 #define SAMV71_RCOSC_FREQUENCY Pmc_RcOscFreq_4M
@@ -466,7 +464,6 @@ void SamV71Core_Init(void)
 #ifndef RT_RTOS_NO_INIT
 	// Configure RC Oscillator as source for main clock.
 	// Configure PLLA and master clock.
-	// This is default setting, unless RT_RTOS_NO_INIT is enabled.
 	const Pmc_Config pmcConfig = {
 		.mainck = { .src = SAMV71_MAIN_CLOCK_SOURCE,
 			    .rcOscFreq = SAMV71_RCOSC_FREQUENCY,
