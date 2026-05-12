@@ -7,7 +7,8 @@ target_sources(SamV71Core
 target_include_directories(SamV71Core
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamV71Core
-  PRIVATE SAMV71::Pmc
+  PRIVATE common_build_options
+          SAMV71::Pmc
           SAMV71::Wdt
           SAMV71::Tic)
 

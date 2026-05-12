@@ -4,6 +4,7 @@ target_sources(RtemsApp
 target_include_directories(RtemsApp
     PRIVATE     ..)
 target_link_libraries(RtemsApp
+    PRIVATE     common_build_options
     PRIVATE     SAMV71::Uart
                 SAMV71::Runtime::Hal
                 SAMV71::Runtime::Monitor

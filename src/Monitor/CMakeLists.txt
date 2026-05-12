@@ -7,7 +7,8 @@ target_sources(SamV71Monitor
 target_include_directories(SamV71Monitor
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamV71Monitor
-  PRIVATE SAMV71::Runtime::Hal
+  PRIVATE common_build_options
+          SAMV71::Runtime::Hal
           SAMV71::Runtime::Mocks)
 
 add_format_target(SamV71Monitor)

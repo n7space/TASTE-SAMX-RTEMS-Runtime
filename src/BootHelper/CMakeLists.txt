@@ -7,6 +7,7 @@ target_sources(SamV71BootHelper
 target_include_directories(SamV71BootHelper
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamV71BootHelper
+  PRIVATE     common_build_options
   PUBLIC      SAMV71::Rstc)
 
 add_format_target(SamV71BootHelper)

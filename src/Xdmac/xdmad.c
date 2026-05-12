@@ -140,7 +140,7 @@ static uint32_t XDMAD_AllocateXdmacChannel(sXdmad *pXdmad, uint8_t bSrcID,
 				XDMAIF_Get_ChannelNumber(bDstID, 0);
 			pXdmad->XdmaChannels[i].bDstRxIfID =
 				XDMAIF_Get_ChannelNumber(bDstID, 1);
-			return ((i)&0xFF);
+			return ((i) & 0xFF);
 		}
 	}
 	TRACE_ERROR("%s:: Allocation failed, all channels are occupied",
@@ -225,7 +225,7 @@ uint32_t XDMAD_AllocateChannel(sXdmad *pXdmad, uint8_t bSrcID, uint8_t bDstID)
  */
 eXdmadRC XDMAD_FreeChannel(sXdmad *pXdmad, uint32_t dwChannel)
 {
-	uint8_t iChannel = (dwChannel)&0xFF;
+	uint8_t iChannel = (dwChannel) & 0xFF;
 	assert(pXdmad != NULL);
 	if (iChannel >= pXdmad->numChannels)
 		return XDMAD_ERROR;
@@ -252,7 +252,7 @@ eXdmadRC XDMAD_FreeChannel(sXdmad *pXdmad, uint32_t dwChannel)
 eXdmadRC XDMAD_SetCallback(sXdmad *pXdmad, uint32_t dwChannel,
 			   XdmadTransferCallback fCallback, void *pArg)
 {
-	uint8_t iChannel = (dwChannel)&0xFF;
+	uint8_t iChannel = (dwChannel) & 0xFF;
 	assert(pXdmad != NULL);
 	if (iChannel >= pXdmad->numChannels)
 		return XDMAD_ERROR;
@@ -276,7 +276,7 @@ eXdmadRC XDMAD_SetCallback(sXdmad *pXdmad, uint32_t dwChannel,
  */
 eXdmadRC XDMAD_PrepareChannel(sXdmad *pXdmad, uint32_t dwChannel)
 {
-	uint8_t iChannel = (dwChannel)&0xFF;
+	uint8_t iChannel = (dwChannel) & 0xFF;
 	Xdmac *pXdmac = pXdmad->pXdmacs;
 
 	assert(pXdmad != NULL);
@@ -398,7 +398,7 @@ void XDMAD_Handler(sXdmad *pDmad)
  */
 eXdmadRC XDMAD_IsTransferDone(sXdmad *pXdmad, uint32_t dwChannel)
 {
-	uint8_t iChannel = (dwChannel)&0xFF;
+	uint8_t iChannel = (dwChannel) & 0xFF;
 	uint8_t state;
 	assert(pXdmad != NULL);
 	if (iChannel >= pXdmad->numChannels)
@@ -427,7 +427,7 @@ eXdmadRC XDMAD_ConfigureTransfer(sXdmad *pXdmad, uint32_t dwChannel,
 				 sXdmadCfg *pXdmaParam, uint32_t dwXdmaDescCfg,
 				 uint32_t dwXdmaDescAddr, uint32_t dwXdmaIntEn)
 {
-	uint8_t iChannel = (dwChannel)&0xFF;
+	uint8_t iChannel = (dwChannel) & 0xFF;
 
 	assert(pXdmad != NULL);
 	if (iChannel >= pXdmad->numChannels)
@@ -488,7 +488,7 @@ eXdmadRC XDMAD_ConfigureTransfer(sXdmad *pXdmad, uint32_t dwChannel,
  */
 eXdmadRC XDMAD_StartTransfer(sXdmad *pXdmad, uint32_t dwChannel)
 {
-	uint8_t iChannel = (dwChannel)&0xFF;
+	uint8_t iChannel = (dwChannel) & 0xFF;
 
 	assert(pXdmad != NULL);
 	if (iChannel >= pXdmad->numChannels)
@@ -518,7 +518,7 @@ eXdmadRC XDMAD_StartTransfer(sXdmad *pXdmad, uint32_t dwChannel)
  */
 eXdmadRC XDMAD_StopTransfer(sXdmad *pXdmad, uint32_t dwChannel)
 {
-	uint8_t _iChannel = (dwChannel)&0xFF;
+	uint8_t _iChannel = (dwChannel) & 0xFF;
 	assert(pXdmad != NULL);
 	if (_iChannel >= pXdmad->numChannels)
 		return XDMAD_ERROR;

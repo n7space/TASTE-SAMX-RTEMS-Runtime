@@ -233,7 +233,7 @@ bool Hal_SleepNs(uint64_t time_ns)
 	       RTEMS_SUCCESSFUL;
 }
 
-int32_t Hal_SemaphoreCreate(void)
+uint32_t Hal_SemaphoreCreate(void)
 {
 	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
 		return 0;
@@ -253,7 +253,7 @@ int32_t Hal_SemaphoreCreate(void)
 	return 0;
 }
 
-bool Hal_SemaphoreObtain(int32_t id)
+bool Hal_SemaphoreObtain(uint32_t id)
 {
 	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
 		return false;
@@ -264,7 +264,7 @@ bool Hal_SemaphoreObtain(int32_t id)
 	return result == RTEMS_SUCCESSFUL;
 }
 
-bool Hal_SemaphoreRelease(int32_t id)
+bool Hal_SemaphoreRelease(uint32_t id)
 {
 	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
 		return false;
@@ -276,10 +276,11 @@ bool Hal_SemaphoreRelease(int32_t id)
 
 void *Hal_IdleTask(uintptr_t ignored)
 {
+	(void)ignored;
 	while (1) {
-        if(idleTaskIsWatchdogEnabled) {
-            Hal_ResetWatchdog();
-        }
+		if (idleTaskIsWatchdogEnabled) {
+			Hal_ResetWatchdog();
+		}
 	}
 
 	return NULL;

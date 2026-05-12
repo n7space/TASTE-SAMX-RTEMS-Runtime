@@ -65,7 +65,7 @@ bool Hal_SleepNs(uint64_t time_ns);
  *
  * @return              ID of the created semaphore
  */
-int32_t Hal_SemaphoreCreate(void);
+uint32_t Hal_SemaphoreCreate(void);
 
 /**
  * @brief               Obtains the indicated semaphore, suspending the
@@ -75,7 +75,7 @@ int32_t Hal_SemaphoreCreate(void);
  *
  * @return              Bool indicating whether the obtain was successful
  */
-bool Hal_SemaphoreObtain(int32_t id);
+bool Hal_SemaphoreObtain(uint32_t id);
 
 /**
  * @brief               Releases the indicated semaphore, potentially resuming
@@ -85,7 +85,7 @@ bool Hal_SemaphoreObtain(int32_t id);
  *
  * @return              Bool indicating whether the release was successful
  */
-bool Hal_SemaphoreRelease(int32_t id);
+bool Hal_SemaphoreRelease(uint32_t id);
 
 /**
  * @brief               Main function of IDLE task.
@@ -93,7 +93,7 @@ bool Hal_SemaphoreRelease(int32_t id);
  * @param[in] ignored   Param required by rtems_task_entry signature - no meaningful value passed.
  * @return              always NULL
  */
-void* Hal_IdleTask(uintptr_t ignored);
+void *Hal_IdleTask(uintptr_t ignored);
 
 /**
  * @brief               Returns information about reason of hardware reset
