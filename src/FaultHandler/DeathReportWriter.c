@@ -29,7 +29,7 @@ extern const uint32_t bsp_section_rtemsstack_end;
 extern DeathReportWriter_DeathReport DEATH_REPORT_BEGIN;
 
 static void
-save_stack(volatile DeathReportWriter_DeathReport *const death_report)
+save_stack(DeathReportWriter_DeathReport *const death_report)
 {
 	/* Calculate available stack space in bytes. DEATH_REPORT_STACK_TRACE_SIZE is
 	 * in words, so max capacity is DEATH_REPORT_STACK_TRACE_SIZE * sizeof(uint32_t)
@@ -87,8 +87,8 @@ bool DeathReportWriter_Init()
 
 bool DeathReportWriter_GenerateDeathReport()
 {
-	volatile DeathReportWriter_DeathReport *const death_report =
-		(volatile DeathReportWriter_DeathReport *)&DEATH_REPORT_BEGIN;
+	DeathReportWriter_DeathReport *const death_report =
+		(DeathReportWriter_DeathReport *)&DEATH_REPORT_BEGIN;
 
 	save_stack(death_report);
 
