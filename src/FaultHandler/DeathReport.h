@@ -34,6 +34,21 @@
 #define DEATH_REPORT_STACK_TRACE_SIZE 128
 
 /**
+ * @brief   BSW DeathReport may contain additional data after the stack trace,
+ *          e.g. self-tests status, which is not used by the TASTE applications.
+ *          However, it's necessary to calculate the checksum over this data
+ *          even if it's unused, to match the BSW behavior - otherwise the death
+ *          report will always fail checksum check on BSW side and will never
+ *          be recognized as valid, making it impossible for BSW to detect ASW
+ *          crash. The amount of bytes is not constant, as it depends on the BSW
+ *          tailoring, so it's left for the user to define that in Makefile.
+*/
+#ifndef DEATH_REPORT_RESERVED_BYTES
+// Default value is set for default set of self-tests on SAMV71 build
+#define DEATH_REPORT_RESERVED_BYTES 35
+#endif
+
+/**
  * @brief Structure representing DeathReport.
  */
 typedef struct __attribute__((packed, aligned(sizeof(uint32_t)))) {
@@ -83,6 +98,9 @@ typedef struct __attribute__((packed, aligned(sizeof(uint32_t)))) {
 	uint32_t stack_trace_pointer; // Saved stack trace pointer.
 	uint32_t stack_trace_length; // Saved stack trace length.
 	uint32_t stack_trace[DEATH_REPORT_STACK_TRACE_SIZE];
+#if DEATH_REPORT_RESERVED_BYTES > 0
+	uint8_t _reserved[DEATH_REPORT_RESERVED_BYTES]
+#endif
 } DeathReportWriter_DeathReport;
 
 #endif

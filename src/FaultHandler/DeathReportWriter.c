@@ -25,24 +25,30 @@
 #define CRC_MOST_SYGNIFICANT_BIT 0x8000
 
 extern const uint32_t bsp_section_rtemsstack_end;
-extern const uint32_t DEATH_REPORT_BEGIN;
+extern DeathReportWriter_DeathReport DEATH_REPORT_BEGIN;
 
-static void save_stack(DeathReportWriter_DeathReport *const death_report)
+static void
+save_stack(DeathReportWriter_DeathReport *const death_report)
 {
-	if ((bsp_section_rtemsstack_end - death_report->stack_trace_pointer) <
-	    DEATH_REPORT_STACK_TRACE_SIZE) {
-		death_report->stack_trace_length =
-			bsp_section_rtemsstack_end -
-			death_report->stack_trace_pointer;
+	/* Calculate available stack space in bytes. DEATH_REPORT_STACK_TRACE_SIZE is
+	 * in words, so max capacity is DEATH_REPORT_STACK_TRACE_SIZE * sizeof(uint32_t)
+	 * bytes. */
+	const uint32_t available_bytes =
+		bsp_section_rtemsstack_end - death_report->stack_trace_pointer;
+	const uint32_t max_bytes =
+		DEATH_REPORT_STACK_TRACE_SIZE * sizeof(uint32_t);
+
+	if (available_bytes < max_bytes) {
+		death_report->stack_trace_length = available_bytes;
 	} else {
-		death_report->stack_trace_length =
-			DEATH_REPORT_STACK_TRACE_SIZE;
+		death_report->stack_trace_length = max_bytes;
 	}
 
-	const uint32_t *const stack =
-		(const uint32_t *)death_report->stack_trace_pointer;
+	uint8_t *const stack_trace_bytes = (uint8_t *)death_report->stack_trace;
+	const uint8_t *const stack_bytes =
+		(const uint8_t *)(uintptr_t)death_report->stack_trace_pointer;
 	for (uint32_t i = 0; i < death_report->stack_trace_length; i++) {
-		death_report->stack_trace[i] = stack[i];
+		stack_trace_bytes[i] = stack_bytes[i];
 	}
 }
 
@@ -81,14 +87,15 @@ bool DeathReportWriter_Init()
 bool DeathReportWriter_GenerateDeathReport()
 {
 	DeathReportWriter_DeathReport *const death_report =
-		(DeathReportWriter_DeathReport *const)&DEATH_REPORT_BEGIN;
+		(DeathReportWriter_DeathReport *)&DEATH_REPORT_BEGIN;
 
 	save_stack(death_report);
 
 	death_report->padding = 0u;
 	death_report->was_seen = false;
-	death_report->checksum = calculate_report_crc(
-		death_report, sizeof(DeathReportWriter_DeathReport));
+	death_report->checksum =
+		calculate_report_crc((const void *)death_report,
+				     sizeof(DeathReportWriter_DeathReport));
 
 	return true;
 }
