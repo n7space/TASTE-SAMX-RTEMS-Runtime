@@ -44,7 +44,8 @@
  *          tailoring, so it's left for the user to define that in Makefile.
 */
 #ifndef DEATH_REPORT_RESERVED_BYTES
-#define DEATH_REPORT_RESERVED_BYTES 0
+// Default value is set for default set of self-tests on SAMV71 build
+#define DEATH_REPORT_RESERVED_BYTES 35
 #endif
 
 /**
