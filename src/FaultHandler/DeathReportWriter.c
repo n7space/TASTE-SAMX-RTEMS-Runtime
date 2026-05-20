@@ -19,7 +19,6 @@
 
 #include <DeathReportWriter.h>
 #include <DeathReport.h>
-#include <string.h>
 
 #define CRC_INITIAL_VALUE 0xFFFF
 #define CRC_POLYNOMIAL 0x1021
@@ -45,12 +44,12 @@ save_stack(DeathReportWriter_DeathReport *const death_report)
 		death_report->stack_trace_length = max_bytes;
 	}
 
-	/* Use memcpy to safely copy stack contents, avoiding direct pointer
-	 * cast/dereference of unvalidated stack_trace_pointer value from exception
-	 * context. */
-	memcpy((void *)death_report->stack_trace,
-	       (const void *)death_report->stack_trace_pointer,
-	       death_report->stack_trace_length);
+	uint8_t *const stack_trace_bytes = (uint8_t *)death_report->stack_trace;
+	const uint8_t *const stack_bytes =
+		(const uint8_t *)(uintptr_t)death_report->stack_trace_pointer;
+	for (uint32_t i = 0; i < death_report->stack_trace_length; i++) {
+		stack_trace_bytes[i] = stack_bytes[i];
+	}
 }
 
 static uint16_t calculate_crc(const uint8_t *const data, const size_t length)
