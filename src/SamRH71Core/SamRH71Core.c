@@ -52,9 +52,9 @@ static uint64_t extract_main_oscillator_frequency(void)
 		return MAIN_CRYSTAL_OSCILLATOR_FREQUENCY;
 	}
 
-    if(main_clock_config.src == Pmc_MainckSrc_XOscBypassed) {
-        return EXTERNAL_CRYSTAL_OSCILLATOR_FREQUENCY;
-    }
+	if (main_clock_config.src == Pmc_MainckSrc_XOscBypassed) {
+		return EXTERNAL_CRYSTAL_OSCILLATOR_FREQUENCY;
+	}
 
 	switch (main_clock_config.rcOscFreq) {
 	case Pmc_RcOscFreq_4M: {
@@ -268,6 +268,115 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 #endif
 #else
 #define SAMRH71_PLLA_STARTUP_TIME 60
+#endif
+
+#if defined(SAMRH71_PLLA_VCO) // 0-3
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_PLLA_VCO cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#if SAMRH71_PLLA_VCO < 0 || SAMRH71_PLLA_VCO > 3
+#error "SAMRH71_PLLA_VCO shall be between 0 and 3"
+#endif
+#else
+#define SAMRH71_PLLA_VCO 2
+#endif
+
+#if defined(SAMRH71_PLLA_FILTER_CAPACITOR_20P) ||     \
+	defined(SAMRH71_PLLA_FILTER_CAPACITOR_40P) || \
+	defined(SAMRH71_PLLA_FILTER_CAPACITOR_30P) || \
+	defined(SAMRH71_PLLA_FILTER_CAPACITOR_60P)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_FILTER_CAPACITOR_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_PLLA_FILTER_CAPACITOR_20P)
+#if defined(SAMRH71_PLLA_FILTER_CAPACITOR_40P) ||     \
+	defined(SAMRH71_PLLA_FILTER_CAPACITOR_30P) || \
+	defined(SAMRH71_PLLA_FILTER_CAPACITOR_60P)
+#error "Only one of the macros SAMRH71_PLLA_FILTER_CAPACITOR_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_FILTER_CAPACITOR Pmc_FilterCapacitor_20p
+#elif defined(SAMRH71_PLLA_FILTER_CAPACITOR_40P)
+#if defined(SAMRH71_PLLA_FILTER_CAPACITOR_30P) || \
+	defined(SAMRH71_PLLA_FILTER_CAPACITOR_60P)
+#error "Only one of the macros SAMRH71_PLLA_FILTER_CAPACITOR_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_FILTER_CAPACITOR Pmc_FilterCapacitor_40p
+#elif defined(SAMRH71_PLLA_FILTER_CAPACITOR_30P)
+#if defined(SAMRH71_PLLA_FILTER_CAPACITOR_60P)
+#error "Only one of the macros SAMRH71_PLLA_FILTER_CAPACITOR_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_FILTER_CAPACITOR Pmc_FilterCapacitor_30p
+#elif defined(SAMRH71_PLLA_FILTER_CAPACITOR_60P)
+#define SAMRH71_PLLA_FILTER_CAPACITOR Pmc_FilterCapacitor_60p
+#else
+#define SAMRH71_PLLA_FILTER_CAPACITOR Pmc_FilterCapacitor_60p
+#endif
+
+#if defined(SAMRH71_PLLA_FILTER_RESISTOR_24K) ||    \
+	defined(SAMRH71_PLLA_FILTER_RESISTOR_6K) || \
+	defined(SAMRH71_PLLA_FILTER_RESISTOR_3K) || \
+	defined(SAMRH71_PLLA_FILTER_RESISTOR_12K)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_FILTER_RESISTOR_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_PLLA_FILTER_RESISTOR_24K)
+#if defined(SAMRH71_PLLA_FILTER_RESISTOR_6K) ||     \
+	defined(SAMRH71_PLLA_FILTER_RESISTOR_3K) || \
+	defined(SAMRH71_PLLA_FILTER_RESISTOR_12K)
+#error "Only one of the macros SAMRH71_PLLA_FILTER_RESISTOR_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_FILTER_RESISTOR Pmc_FilterResistor_24K
+#elif defined(SAMRH71_PLLA_FILTER_RESISTOR_6K)
+#if defined(SAMRH71_PLLA_FILTER_RESISTOR_3K) || \
+	defined(SAMRH71_PLLA_FILTER_RESISTOR_12K)
+#error "Only one of the macros SAMRH71_PLLA_FILTER_RESISTOR_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_FILTER_RESISTOR Pmc_FilterResistor_6K
+#elif defined(SAMRH71_PLLA_FILTER_RESISTOR_3K)
+#if defined(SAMRH71_PLLA_FILTER_RESISTOR_12K)
+#error "Only one of the macros SAMRH71_PLLA_FILTER_RESISTOR_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_FILTER_RESISTOR Pmc_FilterResistor_3K
+#elif defined(SAMRH71_PLLA_FILTER_RESISTOR_12K)
+#define SAMRH71_PLLA_FILTER_RESISTOR Pmc_FilterResistor_12K
+#else
+#define SAMRH71_PLLA_FILTER_RESISTOR Pmc_FilterResistor_24K
+#endif
+
+#if defined(SAMRH71_PLLA_CURRENT_500U) ||      \
+	defined(SAMRH71_PLLA_CURRENT_750U) ||  \
+	defined(SAMRH71_PLLA_CURRENT_1000U) || \
+	defined(SAMRH71_PLLA_CURRENT_1250U)
+#if defined(RT_RTOS_NO_INIT)
+#error "SAMRH71_CURRENT_* cannot be defined together with RT_RTOS_NO_INIT"
+#endif
+#endif
+
+#if defined(SAMRH71_PLLA_CURRENT_500U)
+#if defined(SAMRH71_PLLA_CURRENT_750U) ||      \
+	defined(SAMRH71_PLLA_CURRENT_1000U) || \
+	defined(SAMRH71_PLLA_CURRENT_1250U)
+#error "Only one of the macros SAMRH71_PLLA_CURRENT_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_500u
+#elif defined(SAMRH71_PLLA_CURRENT_750U)
+#if defined(SAMRH71_PLLA_CURRENT_1000U) || defined(SAMRH71_PLLA_CURRENT_1250U)
+#error "Only one of the macros SAMRH71_PLLA_CURRENT_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_750u
+#elif defined(SAMRH71_PLLA_CURRENT_1000U)
+#if defined(SAMRH71_PLLA_CURRENT_1250U)
+#error "Only one of the macros SAMRH71_PLLA_CURRENT_* shall be defined at once."
+#endif
+#define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_1000u
+#if defined(SAMRH71_PLLA_CURRENT_1250U)
+#define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_1250u
+#else
+#define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_1250u
 #endif
 
 #if defined(SAMRH71_RCOSC_XOSC_STARTUP_TIME)
@@ -488,10 +597,10 @@ void SamRH71Core_Init(void)
 		.pll = { .pllaMul = SAMRH71_PLLA_MULTIPLIER,
 			 .pllaDiv = SAMRH71_PLLA_DIVIDER,
 			 .pllaStartupTime = SAMRH71_PLLA_STARTUP_TIME,
-             .pllaVco = 2,
-             .pllaFilterCapacitor = Pmc_FilterCapacitor_60p,
-             .pllaFilterResistor = Pmc_FilterResistor_24K,
-             .pllaCurrent = Pmc_PllCurrent_1250u,
+             .pllaVco = SAMRH71_PLLA_VCO,
+             .pllaFilterCapacitor = SAMRH71_PLLA_FILTER_CAPACITOR,
+             .pllaFilterResistor = SAMRH71_PLLA_FILTER_RESISTOR,
+             .pllaCurrent = SAMRH71_PLLA_CURRENT,
         },
 		.masterck = { .src = SAMRH71_MASTER_CLOCK_SOURCE,
 			      .presc = SAMRH71_MASTER_CLOCK_PRESCALER,
