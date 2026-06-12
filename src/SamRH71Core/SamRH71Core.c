@@ -190,6 +190,7 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 #else
 #error "SAMRH71_USE_INTERNAL_RC can be used only when one of SAMRH71_CPU_FREQUENCY_* is defined"
 #endif
+#endif
 
 #if defined(SAMRH71_CPU_FREQUENCY_100MHZ)
 #define SAMRH71_RCOSC_FREQUENCY_10
@@ -413,7 +414,7 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 #error "Only one of the macros SAMRH71_PLLA_CURRENT_* shall be defined at once."
 #endif
 #define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_1000u
-#if defined(SAMRH71_PLLA_CURRENT_1250U)
+#elif defined(SAMRH71_PLLA_CURRENT_1250U)
 #define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_1250u
 #else
 #define SAMRH71_PLLA_CURRENT Pmc_PllCurrent_1250u
