@@ -28,6 +28,7 @@
 #include <Systick/Systick.h>
 #include <Pmc/Pmc.h>
 #include <Mpu/Mpu.h>
+#include <Matrix/Matrix.h>
 
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
@@ -95,6 +96,39 @@ static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
 				*mck_frequency * (pll_config.pllaMul + 1);
 		} else if (pll_config.pllaDiv > 0 && pll_config.pllaMul == 0) {
 			*mck_frequency = *mck_frequency / pll_config.pllaDiv;
+		}
+	}
+}
+
+static void SamRH71Core_InitMatrix()
+{
+	// Configure Matrix
+	// Workaround for Hardware bug related to memory access on SAMRH71F20
+	// impacts peripherals using DMA: Mcan, Xdmac, Gmac and SpaceWire
+	// details in document DS80000875D - Rad-Hard 32-bit Arm Cortex-M7 Microcontroller
+	// for Aerospace Applications Errata Sheet
+	// Erratum number 11
+	Matrix matrix;
+	Matrix_init(&matrix, Matrix_getDeviceBaseAddress());
+
+	const Matrix_Slave flexramSlaves[] = {
+		Matrix_Slave_Flexram0,
+		Matrix_Slave_Flexram1,
+		Matrix_Slave_Flexram2,
+	};
+	const Matrix_SlaveRegionProtectionConfig config = {
+		.isPrivilegedRegionUserWriteAllowed = true,
+		.isPrivilegedRegionUserReadAllowed = true,
+		.regionSplitOffset = Matrix_Size_128MB,
+		.regionOrder = Matrix_RegionSplitOrder_UpperPrivilegedLowerUser,
+	};
+
+	for (uint32_t i = 0; i < 3; i++) {
+		for (uint32_t j = 0;
+		     j < (uint32_t)Matrix_ProtectedRegionId_Count; j++) {
+			Matrix_setSlaveRegionProtectionConfig(
+				&matrix, flexramSlaves[i],
+				(Matrix_ProtectedRegionId)j, &config);
 		}
 	}
 }
@@ -672,6 +706,8 @@ void SamRH71Core_Init(void)
 	systickConfig.reloadValue = systickReloadValue;
 
 	Systick_setConfig(&systick, &systickConfig);
+
+	SamRH71Core_InitMatrix();
 }
 
 void SamRH71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
