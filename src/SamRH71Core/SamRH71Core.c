@@ -116,6 +116,7 @@ static void SamRH71Core_InitMatrix()
 		Matrix_Slave_Flexram1,
 		Matrix_Slave_Flexram2,
 	};
+    const uint32_t flexramSlavesCount = 3;
 	const Matrix_SlaveRegionProtectionConfig config = {
 		.isPrivilegedRegionUserWriteAllowed = true,
 		.isPrivilegedRegionUserReadAllowed = true,
@@ -123,7 +124,7 @@ static void SamRH71Core_InitMatrix()
 		.regionOrder = Matrix_RegionSplitOrder_UpperPrivilegedLowerUser,
 	};
 
-	for (uint32_t i = 0; i < 3; i++) {
+	for (uint32_t i = 0; i < flexramSlavesCount; i++) {
 		for (uint32_t j = 0;
 		     j < (uint32_t)Matrix_ProtectedRegionId_Count; j++) {
 			Matrix_setSlaveRegionProtectionConfig(
