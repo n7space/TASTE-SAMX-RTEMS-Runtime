@@ -99,7 +99,7 @@ typedef struct __attribute__((packed, aligned(sizeof(uint32_t)))) {
 	uint32_t stack_trace_length; // Saved stack trace length.
 	uint32_t stack_trace[DEATH_REPORT_STACK_TRACE_SIZE];
 #if DEATH_REPORT_RESERVED_BYTES > 0
-	uint8_t _reserved[DEATH_REPORT_RESERVED_BYTES]
+	uint8_t _reserved[DEATH_REPORT_RESERVED_BYTES];
 #endif
 } DeathReportWriter_DeathReport;
 
