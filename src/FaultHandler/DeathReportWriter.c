@@ -30,7 +30,7 @@ extern DeathReportWriter_DeathReport DEATH_REPORT_BEGIN;
 static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {
 	/* Copy the active stack region into the report, capped to the report buffer.
-     *
+	 *
 	 * Calculate available stack space in bytes. DEATH_REPORT_STACK_TRACE_SIZE is
 	 * in words, so max capacity is DEATH_REPORT_STACK_TRACE_SIZE * sizeof(uint32_t)
 	 * bytes. */

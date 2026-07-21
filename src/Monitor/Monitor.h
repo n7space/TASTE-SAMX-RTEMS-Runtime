@@ -80,7 +80,7 @@ struct Monitor_InterfaceActivationEntry {
  * @brief                                       Typedef of callback indicating interface message queue overflow
  *
  * @param[in] interface                         represents interface which queue overflowed
- * @param[in] number_of_overflowed_messages     represents number of overflowed (dropped)messages
+ * @param[in] number_of_overflowed_messages     represents number of overflowed (dropped) messages
  *
  */
 typedef void (*Monitor_MessageQueueOverflow)(
