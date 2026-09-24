@@ -17,6 +17,9 @@ jobs:
         submodules: 'recursive'
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y gcc
+        sudo apt update && sudo apt install -y build-essential cppcheck cmake clang-format
+    - name: Check code formatting
+      run: |
+        ./clang-format-check.sh check
     - name: Functional check
       run: make -C test test
