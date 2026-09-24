@@ -9,4 +9,4 @@ target_include_directories(Mocks
 
 add_format_target(Mocks)
 
-add_library(SAMV71::Runtime::Mocks ALIAS Mocks)
+add_library(SAMX71::Runtime::Mocks ALIAS Mocks)

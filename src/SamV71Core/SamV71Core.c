@@ -81,7 +81,7 @@ static uint64_t extract_main_oscillator_frequency(void)
 	return 0;
 }
 
-static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
+static void apply_plla_config(const Pmc_MasterckConfig *master_clock_config,
 			      uint64_t *mck_frequency)
 {
 	// Fold the PLLA settings into the clock frequency when PLLACK is selected.

@@ -205,7 +205,6 @@ void XDMAD_Initialize(sXdmad *pXdmad, uint8_t bPollingMode)
  */
 uint32_t XDMAD_AllocateChannel(sXdmad *pXdmad, uint8_t bSrcID, uint8_t bDstID)
 {
-	uint32_t dwChannel = XDMAD_ALLOC_FAILED;
 	uint32_t volatile timer = 0x7FF;
 	assert(xdmad_lock);
 
@@ -213,7 +212,8 @@ uint32_t XDMAD_AllocateChannel(sXdmad *pXdmad, uint8_t bSrcID, uint8_t bDstID)
 	const rtems_status_code obtainResult =
 		rtems_semaphore_obtain(xdmad_lock, RTEMS_WAIT, timer);
 	if (obtainResult == RTEMS_SUCCESSFUL) {
-		dwChannel = XDMAD_AllocateXdmacChannel(pXdmad, bSrcID, bDstID);
+		uint32_t dwChannel =
+			XDMAD_AllocateXdmacChannel(pXdmad, bSrcID, bDstID);
 		rtems_semaphore_release(xdmad_lock);
 		return dwChannel;
 	}
@@ -321,28 +321,26 @@ void XDMAD_Handler(sXdmad *pDmad)
 {
 	++XDMAD_Handler_in;
 	Xdmac *pXdmac;
-	sXdmadChannel *pCh;
-	uint32_t xdmaChannelIntStatus, xdmaGlobaIntStatus, xdmaGlobalChStatus;
-	uint8_t bExec = 0;
-	uint8_t _iChannel;
 	assert(pDmad != NULL);
 
 	pXdmac = pDmad->pXdmacs;
-	xdmaGlobaIntStatus = XDMAC_GetGIsr(pXdmac);
+	uint32_t xdmaGlobaIntStatus = XDMAC_GetGIsr(pXdmac);
 	if ((xdmaGlobaIntStatus & 0xFFFFFF) != 0) {
-		xdmaGlobalChStatus = XDMAC_GetGlobalChStatus(pXdmac);
+		uint32_t xdmaGlobalChStatus = XDMAC_GetGlobalChStatus(pXdmac);
+		uint8_t _iChannel = 0;
 		for (_iChannel = 0; _iChannel < pDmad->numChannels;
 		     _iChannel++) {
 			if (!(xdmaGlobaIntStatus & (1 << _iChannel)))
 				continue;
-			pCh = &pDmad->XdmaChannels[_iChannel];
+			sXdmadChannel *pCh = &pDmad->XdmaChannels[_iChannel];
 			if (pCh->state == XDMAD_STATE_FREE)
 				return;
+			uint8_t bExec = 0;
 			if ((xdmaGlobalChStatus &
 			     (XDMAC_GS_ST0 << _iChannel)) == 0) {
-				bExec = 0;
-				xdmaChannelIntStatus = XDMAC_GetMaskChannelIsr(
-					pXdmac, _iChannel);
+				uint32_t xdmaChannelIntStatus =
+					XDMAC_GetMaskChannelIsr(pXdmac,
+								_iChannel);
 				if (xdmaChannelIntStatus & XDMAC_CIS_BIS) {
 					if ((XDMAC_GetChannelItMask(pXdmac,
 								    _iChannel) &
@@ -423,7 +421,8 @@ eXdmadRC XDMAD_IsTransferDone(sXdmad *pXdmad, uint32_t dwChannel)
  * \param dwChannel ControllerNumber << 8 | ChannelNumber.
  */
 eXdmadRC XDMAD_ConfigureTransfer(sXdmad *pXdmad, uint32_t dwChannel,
-				 sXdmadCfg *pXdmaParam, uint32_t dwXdmaDescCfg,
+				 const sXdmadCfg *pXdmaParam,
+				 uint32_t dwXdmaDescCfg,
 				 uint32_t dwXdmaDescAddr, uint32_t dwXdmaIntEn)
 {
 	uint8_t iChannel = (dwChannel) & 0xFF;

@@ -10,4 +10,4 @@ target_link_libraries(BrokerLock
 add_format_target(BrokerLock)
 
 set_target_properties(BrokerLock PROPERTIES OUTPUT_NAME "brokerLock")
-add_library(SAMV71::Runtime::BrokerLock ALIAS BrokerLock)
+add_library(SAMX71::Runtime::BrokerLock ALIAS BrokerLock)

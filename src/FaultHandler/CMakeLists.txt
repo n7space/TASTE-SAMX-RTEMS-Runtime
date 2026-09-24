@@ -20,4 +20,4 @@ target_link_libraries(FaultHandler
 add_format_target(FaultHandler)
 
 set_target_properties(FaultHandler PROPERTIES OUTPUT_NAME "faulthandler")
-add_library(SAMV71::Runtime::FaultHandler ALIAS FaultHandler)
+add_library(SAMX71::Runtime::FaultHandler ALIAS FaultHandler)
