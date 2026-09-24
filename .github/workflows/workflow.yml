@@ -27,14 +27,13 @@ jobs:
         ./clang-format-check.sh check
     - name: Build SamV71Q21
       run: |
-        echo $PATH
         mkdir build-samv
         cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV71Q21=ON -DTOOLS_ENABLE_CPPCHECK=ON
         cmake --build build-samv
     - name: BuildSamRH71F20
       run: |
         mkdir build-samrh
-        cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV70F20=ON -DTOOLS_ENABLE_CPPCHECK=ON
-        cmake --build build-samv
+        cmake -S . -B build-samrh -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMRH71F20=ON -DTOOLS_ENABLE_CPPCHECK=ON
+        cmake --build build-samrh
     - name: Functional check
       run: make -C test test

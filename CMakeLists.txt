@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 
 option(TARGET_SAMV71Q21 "Compile code for SamV71Q21" OFF)
-option(TARGET_SAMV70F20 "Compile code form SamRH71F20" OFF)
+option(TARGET_SAMRH71F20 "Compile code form SamRH71F20" OFF)
 
 if(TARGET_SAMV71Q21)
-    if(TARGET_SAMV70F20)
-        message(FATAL_ERROR "Options TARGET_SAMV71Q21 and TARGET_SAMV70F20 cannot be both enabled")
+    if(TARGET_SAMRH71F20)
+        message(FATAL_ERROR "Options TARGET_SAMV71Q21 and TARGET_SAMRH71F20 cannot be both enabled")
     endif()
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/toolchains/samv71.cmake)
-elseif(TARGET_SAMV70F20)
+elseif(TARGET_SAMRH71F20)
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/toolchains/samrh71.cmake)
 else()
-    message(FATAL_ERROR "One of the TARGET_SAMV71Q21 and TARGET_SAMV70F20 options shall be enabled")
+    message(FATAL_ERROR "One of the TARGET_SAMV71Q21 and TARGET_SAMRH71F20 options shall be enabled")
 endif()
 
 project(Samv71Rtems VERSION 1.0.0 LANGUAGES C)
