@@ -1,3 +1,6 @@
 [submodule "arm-bsp"]
 	path = arm-bsp
 	url = https://github.com/n7space/arm-bsp.git
+[submodule "cmake"]
+	path = cmake
+	url = https://github.com/n7space/cmake-tools.git
