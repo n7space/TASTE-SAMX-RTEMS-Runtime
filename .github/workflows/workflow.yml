@@ -17,9 +17,24 @@ jobs:
         submodules: 'recursive'
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y build-essential cppcheck cmake clang-format
+        sudo apt update && sudo apt install -y build-essential cppcheck cmake clang-format curl
+    - name: Install taste-rtems-qdp-arm
+      run: |
+        mkdir -p /opt/taste-rtems-qdp-arm
+        curl -s -L https://github.com/n7space/TASTE-RTEMS-QDP-ARM/releases/download/v1.1.0/taste-rtems-qdp-arm.tar.xz | tar -Jx - -C /opt/taste-rtems-qdp-arm
+        echo "/opt/taste-rtems-qdp-arm/bin" >> $GITHUB_PATH
     - name: Check code formatting
       run: |
         ./clang-format-check.sh check
+    - name: Build SamV71Q21
+      run: |
+        mkdir build-samv
+        cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV71Q21=ON -TOOLS_ENABLE_CPPCHECK=ON
+        cmake --build build-samv
+    - name: BuildSamRH71F20
+      run: |
+        mkdir build-samrh
+        cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV70F20=ON -TOOLS_ENABLE_CPPCHECK=ON
+        cmake --build build-samv
     - name: Functional check
       run: make -C test test
