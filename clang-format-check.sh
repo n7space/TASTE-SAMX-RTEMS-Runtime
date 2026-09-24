@@ -21,6 +21,8 @@ esac
 
 DIRS="src/"
 
+clang-format --version
+
 for source in $(find ${DIRS} -name \*.cpp -o -name \*.hpp -o -name \*.cc -o -name \*.hh -o -name \*.c -o -name \*.h)
 do
     if [ "${source}" != "src/Xdmac/component_xdmac.h" ] # external file integrated into lib
