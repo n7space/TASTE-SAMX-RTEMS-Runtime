@@ -20,8 +20,7 @@ jobs:
         sudo apt update && sudo apt install -y build-essential cppcheck cmake clang-format curl ninja-build
     - name: Install taste-rtems-qdp-arm
       run: |
-        mkdir -p /opt/taste-rtems-qdp-arm
-        curl -s -L https://github.com/n7space/TASTE-RTEMS-QDP-ARM/releases/download/v1.1.0/taste-rtems-qdp-arm.tar.xz | tar -Jxf - -C /opt/taste-rtems-qdp-arm
+        curl -s -L https://github.com/n7space/TASTE-RTEMS-QDP-ARM/releases/download/v1.1.0/taste-rtems-qdp-arm.tar.xz | tar -Jxf - -C /opt
         echo "/opt/taste-rtems-qdp-arm/bin" >> $GITHUB_PATH
     - name: Check code formatting
       run: |
