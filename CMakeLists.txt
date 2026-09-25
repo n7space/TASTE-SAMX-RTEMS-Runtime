@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 option(TARGET_SAMV71Q21 "Compile code for SamV71Q21" OFF)
 option(TARGET_SAMRH71F20 "Compile code form SamRH71F20" OFF)
 
+# CMAKE_TOOLCHAIN_FILE shall be set before project()
 if(TARGET_SAMV71Q21)
     if(TARGET_SAMRH71F20)
         message(FATAL_ERROR "Options TARGET_SAMV71Q21 and TARGET_SAMRH71F20 cannot be both enabled")
@@ -15,30 +16,21 @@ else()
 endif()
 
 project(TasteSamXRtemsRuntime VERSION 1.0.0 LANGUAGES C)
-
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-
 option(TOOLS_ENABLE_CPPCHECK "Enable Cppcheck" OFF)
-
+option(TASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" TRUE)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include(MessageColors)
 include(LoggingHelper)
 include(ClangFormat)
 include(Doxygen)
-
-add_library(common_build_options INTERFACE)
-
 include(CommonBuildOptions)
-include(Sanitizers)
-
-option(TASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS
-       "Treat compiler warnings as errors"
-       TRUE)
 
 if(TOOLS_ENABLE_CPPCHECK)
     find_program(CPPCHECK_EXE cppcheck REQUIRED)
@@ -72,6 +64,7 @@ if(TASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS)
     list(APPEND PROJECT_WARNINGS -Werror)
 endif()
 
+add_library(common_build_options INTERFACE)
 target_compile_options(common_build_options INTERFACE ${PROJECT_WARNINGS})
 
 if(TOOLS_ENABLE_CPPCHECK)
@@ -80,12 +73,9 @@ endif()
 
 add_library(bsp_build_options INTERFACE)
 target_compile_definitions(bsp_build_options
-    INTERFACE   USE_UART_IO
+    INTERFACE
+    USE_UART_IO
     LOW_LEVEL_IO_UART_ID=4)
-
-include_directories(SYSTEM
-    /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib/include
-    /opt/taste-rtems-qdp-arm/include)
 
 include(FetchContent)
 FetchContent_Declare(arm-bsp SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arm-bsp" SYSTEM EXCLUDE_FROM_ALL)
