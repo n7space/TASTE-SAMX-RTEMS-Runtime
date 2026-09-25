@@ -36,7 +36,7 @@ add_library(common_build_options INTERFACE)
 include(CommonBuildOptions)
 include(Sanitizers)
 
-option(TASTE_SAMV71_DRIVERS_WARNINGS_AS_ERRORS
+option(TASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS
        "Treat compiler warnings as errors"
        TRUE)
 
@@ -67,7 +67,7 @@ set(PROJECT_WARNINGS
     -Wimplicit-function-declaration
     -Wmisleading-indentation)
 
-if(TASTE_SAMV71_DRIVERS_WARNINGS_AS_ERRORS)
+if(TASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS)
     log_option_enabled("warnings as errors")
     list(APPEND PROJECT_WARNINGS -Werror)
 endif()

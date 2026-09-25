@@ -36,12 +36,12 @@ jobs:
     - name: Build SamV71Q21
       run: |
         mkdir build-samv
-        cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV71Q21=ON -DTOOLS_ENABLE_CPPCHECK=ON
+        cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV71Q21=ON -DTOOLS_ENABLE_CPPCHECK=ON -DTASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS=ON
         cmake --build build-samv
     - name: Build SamRH71F20
       run: |
         mkdir build-samrh
-        cmake -S . -B build-samrh -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMRH71F20=ON -DTOOLS_ENABLE_CPPCHECK=ON
+        cmake -S . -B build-samrh -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMRH71F20=ON -DTOOLS_ENABLE_CPPCHECK=ON -DTASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS=ON
         cmake --build build-samrh
     - name: Functional check
       run: make -C test test
