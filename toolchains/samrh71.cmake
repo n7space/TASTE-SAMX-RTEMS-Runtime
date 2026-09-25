@@ -13,8 +13,8 @@ set(CMAKE_C_FLAGS
 -mlittle-endian \
 -mthumb \
 -ffunction-sections \
--DN7S_TARGET_SAMV71Q21 \
--isystem /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib/include \
+-DN7S_TARGET_SAMRH71F20 \
+-isystem /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samrh71f20/lib/include \
 -isystem /opt/taste-rtems-qdp-arm/include")
 set(CMAKE_CXX_FLAGS
 "-mcpu=cortex-m7 \
@@ -23,14 +23,14 @@ set(CMAKE_CXX_FLAGS
 -mlittle-endian \
 -mthumb \
 -ffunction-sections \
--DN7S_TARGET_SAMV71Q21 \
--isystem /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib/include \
+-DN7S_TARGET_SAMRH71F20 \
+-isystem /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samrh71f20/lib/include \
 -isystem /opt/taste-rtems-qdp-arm/include")
 set(CMAKE_EXE_LINKER_FLAGS
 "-qnolinkcmds \
--Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/linker_script/linkcmds.intsram \
--Wl,-L${CMAKE_CURRENT_SOURCE_DIR}/linker_script \
--Wl,-L/opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib \
+-Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/linker_script/samrh71f20/linkcmds.intsram \
+-Wl,-L${CMAKE_CURRENT_SOURCE_DIR}/linker_script/samrh71f20 \
+-Wl,-L/opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samrh71f20/lib \
 -qrtems \
 -Wl,--start-group \
 -lrtemscpu \

@@ -234,7 +234,7 @@ extern uint32_t XDMAD_AllocateChannel(sXdmad *pXdmad, uint8_t bSrcID,
 extern eXdmadRC XDMAD_FreeChannel(sXdmad *pXdmad, uint32_t dwChannel);
 
 extern eXdmadRC XDMAD_ConfigureTransfer(sXdmad *pXdmad, uint32_t dwChannel,
-					sXdmadCfg *pXdmaParam,
+					const sXdmadCfg *pXdmaParam,
 					uint32_t dwXdmaDescCfg,
 					uint32_t dwXdmaDescAddr,
 					uint32_t dwXdmaIntEn);

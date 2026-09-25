@@ -17,6 +17,31 @@ jobs:
         submodules: 'recursive'
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y gcc
+        sudo apt update && sudo apt install -y build-essential cppcheck cmake clang-format curl ninja-build python3-venv
+    - name: Install taste-rtems-qdp-arm
+      run: |
+        curl -s -L https://github.com/n7space/TASTE-RTEMS-QDP-ARM/releases/download/v1.1.0/taste-rtems-qdp-arm.tar.xz | tar -Jxf - -C /opt
+        echo "/opt/taste-rtems-qdp-arm/bin" >> $GITHUB_PATH
+    - name: Install Lizard Cyclomatic Complexity Analyzer
+      run: |
+        python3 -m venv env
+        . env/bin/activate
+        pip install lizard
+    - name: Check code formatting
+      run: |
+        ./clang-format-check.sh check
+    - name: Verify Cyclomatic Complexity
+      run: |
+        ./env/bin/lizard -C 17 -l cpp -l c src/
+    - name: Build SamV71Q21
+      run: |
+        mkdir build-samv
+        cmake -S . -B build-samv -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMV71Q21=ON -DTOOLS_ENABLE_CPPCHECK=ON -DTASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS=ON
+        cmake --build build-samv
+    - name: Build SamRH71F20
+      run: |
+        mkdir build-samrh
+        cmake -S . -B build-samrh -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTARGET_SAMRH71F20=ON -DTOOLS_ENABLE_CPPCHECK=ON -DTASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS=ON
+        cmake --build build-samrh
     - name: Functional check
       run: make -C test test
