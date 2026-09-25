@@ -13,7 +13,9 @@ set(CMAKE_C_FLAGS
 -mlittle-endian \
 -mthumb \
 -ffunction-sections \
--DN7S_TARGET_SAMV71Q21")
+-DN7S_TARGET_SAMV71Q21 \
+-isystem /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib/include \
+-isystem /opt/taste-rtems-qdp-arm/include")
 set(CMAKE_CXX_FLAGS
 "-mcpu=cortex-m7 \
 -mfloat-abi=hard \
@@ -21,17 +23,18 @@ set(CMAKE_CXX_FLAGS
 -mlittle-endian \
 -mthumb \
 -ffunction-sections \
--DN7S_TARGET_SAMV71Q21")
+-DN7S_TARGET_SAMV71Q21 \
+-isystem /opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib/include \
+-isystem /opt/taste-rtems-qdp-arm/include")
 set(CMAKE_EXE_LINKER_FLAGS
 "-qnolinkcmds \
--Wl,-T/opt/rtems/arm-rtems6/atsamv/lib/linkcmds.intsram \
--L/opt/rtems/arm-rtems6/atsamv/lib \
+-Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/linker_script/linkcmds.intsram \
+-Wl,-L${CMAKE_CURRENT_SOURCE_DIR}/linker_script \
+-Wl,-L/opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib \
 -qrtems \
 -Wl,--start-group \
 -lrtemscpu \
 -lrtemsbsp \
 -lgcc \
 -Wl,--end-group \
--Wl,--gc-sections \
--Wl,-z,origin,-rpath,/opt/rtems/arm-rtems6/atsamv/lib \
--lm")
+-Wl,--gc-sections")

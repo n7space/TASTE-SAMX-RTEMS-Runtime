@@ -14,7 +14,7 @@ else()
     message(FATAL_ERROR "One of the TARGET_SAMV71Q21 and TARGET_SAMRH71F20 options shall be enabled")
 endif()
 
-project(Samv71Rtems VERSION 1.0.0 LANGUAGES C)
+project(TasteSamXRtemsRuntime VERSION 1.0.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
