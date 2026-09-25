@@ -40,27 +40,6 @@ option(TASTE_SAMV71_DRIVERS_WARNINGS_AS_ERRORS
        "Treat compiler warnings as errors"
        TRUE)
 
-if(TASTE_SAMV71_DRIVERS_WARNINGS_AS_ERRORS)
-    log_option_enabled("warnings as errors")
-    set(CLANG_WARNINGS -Werror)
-endif()
-
-set(CLANG_WARNINGS ${CLANG_WARNINGS}
-                   -Wall
-                   -Wextra
-                   -Wpedantic
-                   -Wshadow
-                   -Wcast-align
-                   -Wunused
-                   -Wsign-conversion
-                   -Wnull-dereference
-                   -Wdouble-promotion
-                   -Wformat=2)
-
-set(GCC_WARNINGS ${CLANG_WARNINGS}
-                 -Wimplicit-function-declaration
-                 -Wmisleading-indentation)
-
 if(TOOLS_ENABLE_CPPCHECK)
     find_program(CPPCHECK_EXE cppcheck REQUIRED)
     if(CPPCHECK_EXE MATCHES "-NOTFOUND")
@@ -74,10 +53,23 @@ endif()
 
 log_info(${CMAKE_C_COMPILER_ID})
 
-if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    set(PROJECT_WARNINGS ${CLANG_WARNINGS})
-elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set(PROJECT_WARNINGS ${GCC_WARNINGS})
+set(PROJECT_WARNINGS
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wshadow
+    -Wcast-align
+    -Wunused
+    -Wsign-conversion
+    -Wnull-dereference
+    -Wdouble-promotion
+    -Wformat=2
+    -Wimplicit-function-declaration
+    -Wmisleading-indentation)
+
+if(TASTE_SAMV71_DRIVERS_WARNINGS_AS_ERRORS)
+    log_option_enabled("warnings as errors")
+    list(APPEND PROJECT_WARNINGS -Werror)
 endif()
 
 target_compile_options(common_build_options INTERFACE ${PROJECT_WARNINGS})
