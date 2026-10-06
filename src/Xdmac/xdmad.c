@@ -474,6 +474,44 @@ eXdmadRC XDMAD_IsTransferDone(sXdmad *pXdmad, uint32_t dwChannel)
 	return XDMAD_OK;
 }
 
+static void XDMAD_ConfigureTransferWithDescriptorFetch(
+	Xdmac *pXdmac, uint8_t iChannel, const sXdmadCfg *pXdmaParam,
+	uint32_t dwXdmaDescCfg, uint32_t dwXdmaDescAddr, uint32_t dwXdmaIntEn)
+{
+	if ((dwXdmaDescCfg & XDMAC_CNDC_NDVIEW_Msk) == XDMAC_CNDC_NDVIEW_NDV0) {
+		XDMAC_SetChannelConfig(pXdmac, iChannel, pXdmaParam->mbr_cfg);
+		XDMAC_SetSourceAddr(pXdmac, iChannel, pXdmaParam->mbr_sa);
+		XDMAC_SetDestinationAddr(pXdmac, iChannel, pXdmaParam->mbr_da);
+	}
+	if ((dwXdmaDescCfg & XDMAC_CNDC_NDVIEW_Msk) == XDMAC_CNDC_NDVIEW_NDV1) {
+		XDMAC_SetChannelConfig(pXdmac, iChannel, pXdmaParam->mbr_cfg);
+	}
+	XDMAC_SetDescriptorAddr(pXdmac, iChannel, dwXdmaDescAddr, 0);
+	XDMAC_SetDescriptorControl(pXdmac, iChannel, dwXdmaDescCfg);
+	XDMAC_DisableChannelIt(pXdmac, iChannel, 0xFF);
+	XDMAC_EnableChannelIt(pXdmac, iChannel, dwXdmaIntEn);
+}
+
+static void
+XDMAD_ConfigureTransferWithoutDescriptorFetch(Xdmac *pXdmac, uint8_t iChannel,
+					      const sXdmadCfg *pXdmaParam,
+					      uint32_t dwXdmaIntEn)
+{
+	/* LLI is disabled. */
+	XDMAC_SetSourceAddr(pXdmac, iChannel, pXdmaParam->mbr_sa);
+	XDMAC_SetDestinationAddr(pXdmac, iChannel, pXdmaParam->mbr_da);
+	XDMAC_SetMicroblockControl(pXdmac, iChannel, pXdmaParam->mbr_ubc);
+	XDMAC_SetBlockControl(pXdmac, iChannel, pXdmaParam->mbr_bc);
+	XDMAC_SetDataStride_MemPattern(pXdmac, iChannel, pXdmaParam->mbr_ds);
+	XDMAC_SetSourceMicroBlockStride(pXdmac, iChannel, pXdmaParam->mbr_sus);
+	XDMAC_SetDestinationMicroBlockStride(pXdmac, iChannel,
+					     pXdmaParam->mbr_dus);
+	XDMAC_SetChannelConfig(pXdmac, iChannel, pXdmaParam->mbr_cfg);
+	XDMAC_SetDescriptorAddr(pXdmac, iChannel, 0, 0);
+	XDMAC_SetDescriptorControl(pXdmac, iChannel, 0);
+	XDMAC_EnableChannelIt(pXdmac, iChannel, dwXdmaIntEn);
+}
+
 /**
  * \brief Configure DMA for a single transfer.
  * \param pXdmad     Pointer to xDMA driver instance.
@@ -499,41 +537,12 @@ eXdmadRC XDMAD_ConfigureTransfer(sXdmad *pXdmad, uint32_t dwChannel,
 		return XDMAD_BUSY;
 	/* Linked List is enabled */
 	if ((dwXdmaDescCfg & XDMAC_CNDC_NDE) == XDMAC_CNDC_NDE_DSCR_FETCH_EN) {
-		if ((dwXdmaDescCfg & XDMAC_CNDC_NDVIEW_Msk) ==
-		    XDMAC_CNDC_NDVIEW_NDV0) {
-			XDMAC_SetChannelConfig(pXdmac, iChannel,
-					       pXdmaParam->mbr_cfg);
-			XDMAC_SetSourceAddr(pXdmac, iChannel,
-					    pXdmaParam->mbr_sa);
-			XDMAC_SetDestinationAddr(pXdmac, iChannel,
-						 pXdmaParam->mbr_da);
-		}
-		if ((dwXdmaDescCfg & XDMAC_CNDC_NDVIEW_Msk) ==
-		    XDMAC_CNDC_NDVIEW_NDV1) {
-			XDMAC_SetChannelConfig(pXdmac, iChannel,
-					       pXdmaParam->mbr_cfg);
-		}
-		XDMAC_SetDescriptorAddr(pXdmac, iChannel, dwXdmaDescAddr, 0);
-		XDMAC_SetDescriptorControl(pXdmac, iChannel, dwXdmaDescCfg);
-		XDMAC_DisableChannelIt(pXdmac, iChannel, 0xFF);
-		XDMAC_EnableChannelIt(pXdmac, iChannel, dwXdmaIntEn);
+		XDMAD_ConfigureTransferWithDescriptorFetch(
+			pXdmac, iChannel, pXdmaParam, dwXdmaDescCfg,
+			dwXdmaDescAddr, dwXdmaIntEn);
 	} else {
-		/* LLI is disabled. */
-		XDMAC_SetSourceAddr(pXdmac, iChannel, pXdmaParam->mbr_sa);
-		XDMAC_SetDestinationAddr(pXdmac, iChannel, pXdmaParam->mbr_da);
-		XDMAC_SetMicroblockControl(pXdmac, iChannel,
-					   pXdmaParam->mbr_ubc);
-		XDMAC_SetBlockControl(pXdmac, iChannel, pXdmaParam->mbr_bc);
-		XDMAC_SetDataStride_MemPattern(pXdmac, iChannel,
-					       pXdmaParam->mbr_ds);
-		XDMAC_SetSourceMicroBlockStride(pXdmac, iChannel,
-						pXdmaParam->mbr_sus);
-		XDMAC_SetDestinationMicroBlockStride(pXdmac, iChannel,
-						     pXdmaParam->mbr_dus);
-		XDMAC_SetChannelConfig(pXdmac, iChannel, pXdmaParam->mbr_cfg);
-		XDMAC_SetDescriptorAddr(pXdmac, iChannel, 0, 0);
-		XDMAC_SetDescriptorControl(pXdmac, iChannel, 0);
-		XDMAC_EnableChannelIt(pXdmac, iChannel, dwXdmaIntEn);
+		XDMAD_ConfigureTransferWithoutDescriptorFetch(
+			pXdmac, iChannel, pXdmaParam, dwXdmaIntEn);
 	}
 	return XDMAD_OK;
 }
