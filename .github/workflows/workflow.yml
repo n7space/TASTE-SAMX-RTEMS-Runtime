@@ -31,8 +31,11 @@ jobs:
       run: |
         ./clang-format-check.sh check
     - name: Verify Cyclomatic Complexity
+      # Cyclomatic complexity limit: 10
+      # Line number per function limit: 100
+      # Exclude FaultHandler.c: it includes long inline assembly
       run: |
-        ./env/bin/lizard -C 10 -l cpp -l c src/
+        ./env/bin/lizard -C 10 -L 100 -l cpp -l c -x src/FaultHandler/FaultHandler.c src/
     - name: Build SamV71Q21
       run: |
         mkdir build-samv
