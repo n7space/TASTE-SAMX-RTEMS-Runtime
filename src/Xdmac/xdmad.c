@@ -312,14 +312,117 @@ eXdmadRC XDMAD_PrepareChannel(sXdmad *pXdmad, uint32_t dwChannel)
 }
 
 /**
+ * \brief xDMA interrupt helper for single channel, checks interrupt status
+ * \param pxDmad Pointer to DMA driver instance.
+ * \param pCh Pointer do channel
+ * \param iChannel XDMAC channel index
+ * \return true if channel callback needs to be called
+ */
+static bool XDMAD_HandleChannelInterruptStatus(sXdmad *pDmad,
+					       sXdmadChannel *pCh,
+					       uint8_t iChannel)
+{
+	Xdmac *pXdmac = pDmad->pXdmacs;
+
+	bool result = false;
+	uint32_t xdmaChannelIntStatus =
+		XDMAC_GetMaskChannelIsr(pXdmac, iChannel);
+	if (xdmaChannelIntStatus & XDMAC_CIS_BIS) {
+		if ((XDMAC_GetChannelItMask(pXdmac, iChannel) &
+		     XDMAC_CIM_LIM) == 0) {
+			pCh->state = XDMAD_STATE_DONE;
+			result = true;
+		}
+		TRACE_DEBUG("XDMAC_CIS_BIS\n\r");
+	}
+	if (xdmaChannelIntStatus & XDMAC_CIS_FIS) {
+		TRACE_DEBUG("XDMAC_CIS_FIS\n\r");
+	}
+	if (xdmaChannelIntStatus & XDMAC_CIS_RBEIS) {
+		TRACE_DEBUG("XDMAC_CIS_RBEIS\n\r");
+	}
+	if (xdmaChannelIntStatus & XDMAC_CIS_WBEIS) {
+		TRACE_DEBUG("XDMAC_CIS_WBEIS\n\r");
+	}
+	if (xdmaChannelIntStatus & XDMAC_CIS_ROIS) {
+		TRACE_DEBUG("XDMAC_CIS_ROIS\n\r");
+	}
+	if (xdmaChannelIntStatus & XDMAC_CIS_LIS) {
+		TRACE_DEBUG("XDMAC_CIS_LIS\n\r");
+		pCh->state = XDMAD_STATE_DONE;
+		result = true;
+	}
+	if (xdmaChannelIntStatus & XDMAC_CIS_DIS) {
+		pCh->state = XDMAD_STATE_DONE;
+		result = true;
+	}
+
+	return result;
+}
+
+/**
+ * \brief xDMA interrupt helper for single channel, checks if callback neds to be called
+ * \param pxDmad Pointer to DMA driver instance.
+ * \param pCh Pointer do channel
+ * \param xdmaGlobalChStatus global XDMAC channel status
+ * \param iChannel XDMAC channel index
+ * \return true if channel callback needs to be called
+ */
+static bool XDMAD_HandleChannelInterrupts(sXdmad *pDmad, sXdmadChannel *pCh,
+					  uint32_t xdmaGlobalChStatus,
+					  uint8_t iChannel)
+{
+	Xdmac *pXdmac = pDmad->pXdmacs;
+	if ((xdmaGlobalChStatus & (XDMAC_GS_ST0 << iChannel)) == 0) {
+		return XDMAD_HandleChannelInterruptStatus(pDmad, pCh, iChannel);
+	} else if (XDMAC_GetChannelIsr(pXdmac, iChannel) & XDMAC_CIS_BIS) {
+		/* Block end interrupt for LLI dma mode */
+		return true;
+	}
+	return false;
+}
+
+/**
+ * \brief xDMA interrupt helper for single channel, calls channel callback if needed
+ * \param pxDmad Pointer to DMA driver instance.
+ * \param xdmaGlobaIntStatus global XDMAC interrupt status
+ * \param xdmaGlobalChStatus global XDMAC channel status
+ * \param iChannel XDMAC channel index
+ * \return false if channel state is free, otherwise true
+ */
+static bool XDMAD_HandleChannel(sXdmad *pDmad, uint32_t xdmaGlobaIntStatus,
+				uint32_t xdmaGlobalChStatus, uint8_t iChannel)
+{
+	if (!(xdmaGlobaIntStatus & (1 << iChannel)))
+		return true;
+	sXdmadChannel *pCh = &pDmad->XdmaChannels[iChannel];
+	if (pCh->state == XDMAD_STATE_FREE)
+		return false;
+	bool bExec = XDMAD_HandleChannelInterrupts(
+		pDmad, pCh, xdmaGlobalChStatus, iChannel);
+
+	/* Execute callback */
+	if (bExec && pCh->fCallback) {
+		pCh->fCallback(iChannel, pCh->pArg);
+	}
+
+	return true;
+}
+
+#ifndef NDEBUG
+static int XDMAD_Handler_in = 0;
+static int XDMAD_Handler_out = 0;
+#endif
+
+/**
  * \brief xDMA interrupt handler
  * \param pxDmad Pointer to DMA driver instance.
  */
-int XDMAD_Handler_in = 0;
-int XDMAD_Handler_out = 0;
 void XDMAD_Handler(sXdmad *pDmad)
 {
+#ifndef NDEBUG
 	++XDMAD_Handler_in;
+#endif
 	Xdmac *pXdmac;
 	assert(pDmad != NULL);
 
@@ -330,62 +433,18 @@ void XDMAD_Handler(sXdmad *pDmad)
 		uint8_t _iChannel = 0;
 		for (_iChannel = 0; _iChannel < pDmad->numChannels;
 		     _iChannel++) {
-			if (!(xdmaGlobaIntStatus & (1 << _iChannel)))
-				continue;
-			sXdmadChannel *pCh = &pDmad->XdmaChannels[_iChannel];
-			if (pCh->state == XDMAD_STATE_FREE)
-				return;
-			uint8_t bExec = 0;
-			if ((xdmaGlobalChStatus &
-			     (XDMAC_GS_ST0 << _iChannel)) == 0) {
-				uint32_t xdmaChannelIntStatus =
-					XDMAC_GetMaskChannelIsr(pXdmac,
-								_iChannel);
-				if (xdmaChannelIntStatus & XDMAC_CIS_BIS) {
-					if ((XDMAC_GetChannelItMask(pXdmac,
-								    _iChannel) &
-					     XDMAC_CIM_LIM) == 0) {
-						pCh->state = XDMAD_STATE_DONE;
-						bExec = 1;
-					}
-					TRACE_DEBUG("XDMAC_CIS_BIS\n\r");
-				}
-				if (xdmaChannelIntStatus & XDMAC_CIS_FIS) {
-					TRACE_DEBUG("XDMAC_CIS_FIS\n\r");
-				}
-				if (xdmaChannelIntStatus & XDMAC_CIS_RBEIS) {
-					TRACE_DEBUG("XDMAC_CIS_RBEIS\n\r");
-				}
-				if (xdmaChannelIntStatus & XDMAC_CIS_WBEIS) {
-					TRACE_DEBUG("XDMAC_CIS_WBEIS\n\r");
-				}
-				if (xdmaChannelIntStatus & XDMAC_CIS_ROIS) {
-					TRACE_DEBUG("XDMAC_CIS_ROIS\n\r");
-				}
-				if (xdmaChannelIntStatus & XDMAC_CIS_LIS) {
-					TRACE_DEBUG("XDMAC_CIS_LIS\n\r");
-					pCh->state = XDMAD_STATE_DONE;
-					bExec = 1;
-				}
-				if (xdmaChannelIntStatus & XDMAC_CIS_DIS) {
-					pCh->state = XDMAD_STATE_DONE;
-					bExec = 1;
-				}
-			} else {
-				/* Block end interrupt for LLI dma mode */
-				if (XDMAC_GetChannelIsr(pXdmac, _iChannel) &
-				    XDMAC_CIS_BIS) {
-					/* Execute callback */
-					pCh->fCallback(_iChannel, pCh->pArg);
-				}
-			}
-			/* Execute callback */
-			if (bExec && pCh->fCallback) {
-				pCh->fCallback(_iChannel, pCh->pArg);
+			bool result = XDMAD_HandleChannel(pDmad,
+							  xdmaGlobaIntStatus,
+							  xdmaGlobalChStatus,
+							  _iChannel);
+			if (!result) {
+				break;
 			}
 		}
 	}
+#ifndef NDEBUG
 	++XDMAD_Handler_out;
+#endif
 }
 
 /**

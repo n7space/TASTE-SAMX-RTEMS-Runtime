@@ -32,7 +32,7 @@ jobs:
         ./clang-format-check.sh check
     - name: Verify Cyclomatic Complexity
       run: |
-        ./env/bin/lizard -C 17 -l cpp -l c src/
+        ./env/bin/lizard -C 10 -l cpp -l c src/
     - name: Build SamV71Q21
       run: |
         mkdir build-samv
