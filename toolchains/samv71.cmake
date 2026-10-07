@@ -28,8 +28,8 @@ set(CMAKE_CXX_FLAGS
 -isystem /opt/taste-rtems-qdp-arm/include")
 set(CMAKE_EXE_LINKER_FLAGS
 "-qnolinkcmds \
--Wl,-T${CMAKE_CURRENT_LIST_DIR}/linker_script/linkcmds.intsram \
 -Wl,-L${CMAKE_CURRENT_LIST_DIR}/linker_script \
+-Wl,-T${CMAKE_CURRENT_LIST_DIR}/linker_script/linkcmds.intsram \
 -Wl,-L/opt/taste-rtems-qdp-arm/arm-rtems6/n7sbsp-samv71q21/lib \
 -qrtems \
 -Wl,--start-group \
