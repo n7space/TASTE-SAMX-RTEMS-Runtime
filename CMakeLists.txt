@@ -90,6 +90,7 @@ set_target_properties(Samv71Pmc PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LI
 set_target_properties(Samv71Tic PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LINTING ON)
 set_target_properties(Samv71Uart PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LINTING ON)
 set_target_properties(Samv71Utils PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LINTING ON)
+set_target_properties(Samv71Mpu PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LINTING ON)
 
 add_subdirectory(src)
 

@@ -10,6 +10,7 @@ target_link_libraries(SamX71Core
   PRIVATE runtime_build_options
           SAMV71::Pmc
           SAMV71::Wdt
+          SAMV71::Mpu
           SAMV71::Tic)
 
 add_format_target(SamX71Core)
