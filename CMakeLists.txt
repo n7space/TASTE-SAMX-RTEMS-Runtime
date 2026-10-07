@@ -87,3 +87,5 @@ set_target_properties(Samv71Uart PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_L
 set_target_properties(Samv71Utils PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LINTING ON)
 
 add_subdirectory(src)
+
+configure_doxygen_target(runtime_docs)
