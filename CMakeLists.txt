@@ -72,6 +72,11 @@ if(TOOLS_ENABLE_CPPCHECK)
 endif()
 
 include(FetchContent)
+add_library(bsp_build_options INTERFACE)
+target_compile_definitions(bsp_build_options
+    INTERFACE
+    USE_UART_IO
+    LOW_LEVEL_IO_UART_ID=4)
 FetchContent_Declare(arm-bsp SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arm-bsp" SYSTEM EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(arm-bsp)
 set_target_properties(Samv71Nvic PROPERTIES C_CPPCHECK "" CXX_CPPCHECK "" SKIP_LINTING ON)
