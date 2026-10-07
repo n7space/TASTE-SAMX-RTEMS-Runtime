@@ -64,18 +64,12 @@ if(TASTE_SAMX_RTEMS_RUNTIME_WARNINGS_AS_ERRORS)
     list(APPEND PROJECT_WARNINGS -Werror)
 endif()
 
-add_library(common_build_options INTERFACE)
-target_compile_options(common_build_options INTERFACE ${PROJECT_WARNINGS})
+add_library(runtime_build_options INTERFACE)
+target_compile_options(runtime_build_options INTERFACE ${PROJECT_WARNINGS})
 
 if(TOOLS_ENABLE_CPPCHECK)
     set(CMAKE_C_CPPCHECK ${CPPCHECK_EXE}; --error-exitcode=1; --check-level=exhaustive; --language=c; --std=c99; --inline-suppr; --enable=all; --suppress=unmatchedSuppression; --suppress=missingIncludeSystem; --suppress=unusedFunction; --suppress=staticFunction; --suppress=checkersReport;)
 endif()
-
-add_library(bsp_build_options INTERFACE)
-target_compile_definitions(bsp_build_options
-    INTERFACE
-    USE_UART_IO
-    LOW_LEVEL_IO_UART_ID=4)
 
 include(FetchContent)
 FetchContent_Declare(arm-bsp SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arm-bsp" SYSTEM EXCLUDE_FROM_ALL)

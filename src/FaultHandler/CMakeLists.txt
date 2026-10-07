@@ -12,7 +12,7 @@ target_include_directories(FaultHandler
   PRIVATE
               ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(FaultHandler
-  PRIVATE       common_build_options
+  PRIVATE       runtime_build_options
                 Samv71Scb
                 SAMV71::Nvic
                 SAMV71::Rstc)
