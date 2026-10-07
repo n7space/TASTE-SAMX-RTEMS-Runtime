@@ -655,6 +655,25 @@ uint64_t SamRH71Core_GetProcessorClockFrequency(void)
 #define SAMRH71_MASTER_CLOCK_DIVIDER Pmc_MasterckDiv_2
 #endif
 
+static void SamRH71Core_InitSystick(void)
+{
+	uint64_t coreFrequency = SamRH71Core_GetProcessorClockFrequency();
+	setCoreClockFrequency(coreFrequency);
+
+	uint32_t systickReloadValue =
+		(uint32_t)((coreFrequency *
+			    rtems_configuration_get_microseconds_per_tick()) /
+			   1000000u);
+
+	Systick systick;
+	Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
+	Systick_Config systickConfig;
+	Systick_getConfig(&systick, &systickConfig);
+	systickConfig.reloadValue = systickReloadValue;
+
+	Systick_setConfig(&systick, &systickConfig);
+}
+
 void SamRH71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
@@ -694,21 +713,7 @@ void SamRH71Core_Init(void)
 	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
 
-	uint64_t coreFrequency = SamRH71Core_GetProcessorClockFrequency();
-	setCoreClockFrequency(coreFrequency);
-
-	uint32_t systickReloadValue =
-		(uint32_t)((coreFrequency *
-			    rtems_configuration_get_microseconds_per_tick()) /
-			   1000000u);
-
-	Systick systick;
-	Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
-	Systick_Config systickConfig;
-	Systick_getConfig(&systick, &systickConfig);
-	systickConfig.reloadValue = systickReloadValue;
-
-	Systick_setConfig(&systick, &systickConfig);
+	SamRH71Core_InitSystick();
 
 	SamRH71Core_InitMatrix();
 }
