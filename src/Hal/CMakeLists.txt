@@ -7,7 +7,7 @@ target_sources(SamX71Hal
 target_include_directories(SamX71Hal
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamX71Hal
-  PRIVATE     common_build_options
+  PRIVATE     runtime_build_options
   PUBLIC      SAMV71::Nvic
               SAMV71::Pio
               SAMV71::Pmc
