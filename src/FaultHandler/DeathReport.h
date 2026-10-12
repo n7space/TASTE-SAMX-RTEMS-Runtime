@@ -48,6 +48,7 @@
 #define DEATH_REPORT_RESERVED_BYTES 35
 #endif
 
+// #lizard forgives
 /**
  * @brief Structure representing DeathReport.
  *

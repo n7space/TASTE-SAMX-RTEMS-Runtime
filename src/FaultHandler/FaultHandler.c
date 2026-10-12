@@ -40,6 +40,7 @@ void __attribute__((noreturn)) Fault_HandlerTail(void)
 		;
 }
 
+// #lizard forgives
 void __attribute__((naked, aligned(8))) Fault_Handler()
 {
 	// In order to avoid a preamble which

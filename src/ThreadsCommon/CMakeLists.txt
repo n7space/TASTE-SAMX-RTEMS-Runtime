@@ -7,7 +7,7 @@ target_sources(SamX71ThreadsCommon
 target_include_directories(SamX71ThreadsCommon
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamX71ThreadsCommon
-  PRIVATE common_build_options
+  PRIVATE runtime_build_options
           SAMX71::Runtime::Hal
           SAMX71::Runtime::Monitor
           SAMX71::Runtime::Mocks)
