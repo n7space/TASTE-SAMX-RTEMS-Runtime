@@ -104,6 +104,7 @@ bool SamV71Core_SetPckConfig(const Pmc_PckId id,
  * @param[in] sizeExponent    Establishes size of the region as 2**(sizeExponent + 1)
  *                      Only values from 4 upto 31 are valid, where 4 means 32 bytes and 31 means 4GB.
  */
-void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent);
+void SamV71Core_DisableDataCacheInRegion(const void *address,
+					 size_t sizeExponent);
 
 #endif

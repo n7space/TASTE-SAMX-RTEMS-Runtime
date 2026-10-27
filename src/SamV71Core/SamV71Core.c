@@ -572,7 +572,8 @@ bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
 }
 
-void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
+void SamV71Core_DisableDataCacheInRegion(const void *address,
+					 size_t sizeExponent)
 {
 	// At this moment it is used by can driver,
 	// where the Mpu_RegionMemoryType_StronglyOrdered breaks the driver:
