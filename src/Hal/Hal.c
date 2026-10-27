@@ -187,9 +187,9 @@ bool Hal_Init(void)
 	Hal_InitTimer();
 
 #if defined(N7S_TARGET_SAMV71Q21)
-	main_clock_frequency = SamV71Core_GetMainClockFrequency();
+	main_clock_frequency = SamV71Core_GetMasterClockFrequency();
 #elif defined(N7S_TARGET_SAMRH71F20)
-	main_clock_frequency = SamRH71Core_GetMainClockFrequency();
+	main_clock_frequency = SamRH71Core_GetMasterClockFrequency();
 #endif
 	const uint64_t prescaled_clock_frequency =
 		main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
