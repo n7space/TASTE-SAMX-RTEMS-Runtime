@@ -132,7 +132,7 @@ void Hal_ResetWatchdog()
 	Wdt_reset(&wdt);
 }
 
-void timer_irq_handler()
+void timer_irq_handler(void*)
 {
 	// Count elapsed timer reloads and mark the snapshot as dirty for readers.
 	__atomic_fetch_add(&reloads_counter, 1u, __ATOMIC_RELAXED);
