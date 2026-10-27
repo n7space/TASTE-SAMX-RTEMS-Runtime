@@ -523,7 +523,7 @@ void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 	assert(is_enabled && "Peripheral clock not enabled");
 }
 
-uint64_t SamV71Core_GetMainClockFrequency(void)
+uint64_t SamV71Core_GetMasterClockFrequency(void)
 {
 	Pmc_MasterckConfig master_clock_config;
 	Pmc_getMasterckConfig(&pmc, &master_clock_config);

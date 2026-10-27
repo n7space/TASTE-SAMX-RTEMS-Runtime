@@ -61,11 +61,11 @@ void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
 
 /**
- * @brief Get the main clock frequency in hertz.
+ * @brief Get the master clock frequency in hertz.
  *
- * @return Main clock frequency in Hz.
+ * @return Master clock frequency in Hz.
  */
-uint64_t SamV71Core_GetMainClockFrequency(void);
+uint64_t SamV71Core_GetMasterClockFrequency(void);
 
 /**
  * @brief               Generate a new unique name for semaphore.
