@@ -33,7 +33,8 @@
 
 extern rtems_name generate_new_partition_timer_name();
 static void schedule_next_tick(const uint32_t cyclic_request_data_index);
-static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index);
+static void timer_callback(rtems_id timer_id,
+			   const void *cyclic_request_data_index);
 static void update_execution_time_data(const uint32_t thread_id,
 				       const uint64_t thread_execution_time);
 
@@ -62,11 +63,14 @@ static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 	rtems_interval delta = cyclic_request_data[cyclic_request_data_index]
 				       .next_wakeup_ticks -
 			       rtems_clock_get_ticks_since_boot();
-	rtems_timer_fire_after(timer_id, delta, timer_callback,
-			       (void *)cyclic_request_data_index);
+	rtems_timer_fire_after(
+		timer_id, delta,
+		(rtems_timer_service_routine_entry)timer_callback,
+		(void *)cyclic_request_data_index);
 }
 
-static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index)
+static void timer_callback(rtems_id timer_id,
+			   const void *cyclic_request_data_index)
 {
 	(void)timer_id;
 	uintptr_t index = (uintptr_t)cyclic_request_data_index;
