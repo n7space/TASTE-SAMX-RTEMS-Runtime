@@ -725,7 +725,7 @@ void SamRH71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 	assert(is_enabled && "Peripheral clock not enabled");
 }
 
-uint64_t SamRH71Core_GetMainClockFrequency(void)
+uint64_t SamRH71Core_GetMasterClockFrequency(void)
 {
 	Pmc_MasterckConfig master_clock_config;
 	Pmc_getMasterckConfig(&pmc, &master_clock_config);
@@ -774,7 +774,8 @@ bool SamRH71Core_SetPckConfig(const Pmc_PckId id,
 	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
 }
 
-void SamRH71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
+void SamRH71Core_DisableDataCacheInRegion(const void *address,
+					  size_t sizeExponent)
 {
 	// At this moment it is used by can driver,
 	// where the Mpu_RegionMemoryType_StronglyOrdered breaks the driver:

@@ -61,11 +61,11 @@ void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
 
 /**
- * @brief Get the main clock frequency in hertz.
+ * @brief Get the master clock frequency in hertz.
  *
- * @return Main clock frequency in Hz.
+ * @return Master clock frequency in Hz.
  */
-uint64_t SamV71Core_GetMainClockFrequency(void);
+uint64_t SamV71Core_GetMasterClockFrequency(void);
 
 /**
  * @brief               Generate a new unique name for semaphore.
@@ -104,6 +104,7 @@ bool SamV71Core_SetPckConfig(const Pmc_PckId id,
  * @param[in] sizeExponent    Establishes size of the region as 2**(sizeExponent + 1)
  *                      Only values from 4 upto 31 are valid, where 4 means 32 bytes and 31 means 4GB.
  */
-void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent);
+void SamV71Core_DisableDataCacheInRegion(const void *address,
+					 size_t sizeExponent);
 
 #endif

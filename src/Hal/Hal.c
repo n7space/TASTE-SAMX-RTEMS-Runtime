@@ -132,8 +132,9 @@ void Hal_ResetWatchdog()
 	Wdt_reset(&wdt);
 }
 
-void timer_irq_handler()
+void timer_irq_handler(void *arg)
 {
+	(void)arg;
 	// Count elapsed timer reloads and mark the snapshot as dirty for readers.
 	__atomic_fetch_add(&reloads_counter, 1u, __ATOMIC_RELAXED);
 	ConcurrentAccessFlag_set(&reloads_modified_flag);
@@ -187,9 +188,9 @@ bool Hal_Init(void)
 	Hal_InitTimer();
 
 #if defined(N7S_TARGET_SAMV71Q21)
-	main_clock_frequency = SamV71Core_GetMainClockFrequency();
+	main_clock_frequency = SamV71Core_GetMasterClockFrequency();
 #elif defined(N7S_TARGET_SAMRH71F20)
-	main_clock_frequency = SamRH71Core_GetMainClockFrequency();
+	main_clock_frequency = SamRH71Core_GetMasterClockFrequency();
 #endif
 	const uint64_t prescaled_clock_frequency =
 		main_clock_frequency / CLOCK_SELECTION_PRESCALLER;
